@@ -1,0 +1,102 @@
+{
+ "url": "http://localhost:8000",
+ "when": "2026-11-18 00:08:54",
+ "per_sample": [
+  {
+   "sample": "UFPR04 \u00b7 sunny (training car park, unseen day)",
+   "model": "cnn",
+   "bays": 35,
+   "round_trip_ms_median": 32.6,
+   "server_ms_median": 29.1,
+   "ms_per_bay_server": 0.83
+  },
+  {
+   "sample": "UFPR04 \u00b7 sunny (training car park, unseen day)",
+   "model": "baseline",
+   "bays": 35,
+   "round_trip_ms_median": 20.0,
+   "server_ms_median": 17.3,
+   "ms_per_bay_server": 0.49
+  },
+  {
+   "sample": "UFPR04 \u00b7 real rain (unseen weather)",
+   "model": "cnn",
+   "bays": 35,
+   "round_trip_ms_median": 28.8,
+   "server_ms_median": 25.8,
+   "ms_per_bay_server": 0.74
+  },
+  {
+   "sample": "UFPR04 \u00b7 real rain (unseen weather)",
+   "model": "baseline",
+   "bays": 35,
+   "round_trip_ms_median": 21.1,
+   "server_ms_median": 18.5,
+   "ms_per_bay_server": 0.53
+  },
+  {
+   "sample": "UFPR05 \u00b7 cloudy (unseen car park)",
+   "model": "cnn",
+   "bays": 46,
+   "round_trip_ms_median": 39.0,
+   "server_ms_median": 35.4,
+   "ms_per_bay_server": 0.77
+  },
+  {
+   "sample": "UFPR05 \u00b7 cloudy (unseen car park)",
+   "model": "baseline",
+   "bays": 46,
+   "round_trip_ms_median": 26.5,
+   "server_ms_median": 23.5,
+   "ms_per_bay_server": 0.51
+  },
+  {
+   "sample": "PUCPR \u00b7 rain, 195 bays (unseen car park)",
+   "model": "cnn",
+   "bays": 195,
+   "round_trip_ms_median": 122.1,
+   "server_ms_median": 118.5,
+   "ms_per_bay_server": 0.61
+  },
+  {
+   "sample": "PUCPR \u00b7 rain, 195 bays (unseen car park)",
+   "model": "baseline",
+   "bays": 195,
+   "round_trip_ms_median": 70.7,
+   "server_ms_median": 67.2,
+   "ms_per_bay_server": 0.34
+  },
+  {
+   "sample": "CNRPark-EXT camera 5 \u00b7 sunny (unseen camera set)",
+   "model": "cnn",
+   "bays": 55,
+   "round_trip_ms_median": 41.1,
+   "server_ms_median": 38.2,
+   "ms_per_bay_server": 0.69
+  },
+  {
+   "sample": "CNRPark-EXT camera 5 \u00b7 sunny (unseen camera set)",
+   "model": "baseline",
+   "bays": 55,
+   "round_trip_ms_median": 27.0,
+   "server_ms_median": 24.0,
+   "ms_per_bay_server": 0.44
+  },
+  {
+   "sample": "CNRPark-EXT camera 1 \u00b7 rain, trees in view (hard case)",
+   "model": "cnn",
+   "bays": 35,
+   "round_trip_ms_median": 29.7,
+   "server_ms_median": 26.9,
+   "ms_per_bay_server": 0.77
+  },
+  {
+   "sample": "CNRPark-EXT camera 1 \u00b7 rain, trees in view (hard case)",
+   "model": "baseline",
+   "bays": 35,
+   "round_trip_ms_median": 19.1,
+   "server_ms_median": 16.3,
+   "ms_per_bay_server": 0.47
+  }
+ ]
+}

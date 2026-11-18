@@ -1,0 +1,157 @@
+{
+ "samples": [
+  {
+   "name": "UFPR04 \u00b7 sunny (training car park, unseen day)",
+   "image": "/samples/ufpr04_sunny.jpg",
+   "layout": "/samples/ufpr04_sunny_layout.json",
+   "source": "PKLot/UFPR04/Sunny/2013-01-17/2013-01-17_11_05_07.jpg",
+   "true_occupied": 22,
+   "total": 35
+  },
+  {
+   "name": "UFPR04 \u00b7 real rain (unseen weather)",
+   "image": "/samples/ufpr04_rainy.jpg",
+   "layout": "/samples/ufpr04_rainy_layout.json",
+   "source": "PKLot/UFPR04/Rainy/2013-01-21/2013-01-21_08_20_03.jpg",
+   "true_occupied": 21,
+   "total": 35
+  },
+  {
+   "name": "UFPR05 \u00b7 cloudy (unseen car park)",
+   "image": "/samples/ufpr05_cloudy.jpg",
+   "layout": "/samples/ufpr05_cloudy_layout.json",
+   "source": "PKLot/UFPR05/Cloudy/2013-02-22/2013-02-22_17_45_12.jpg",
+   "true_occupied": 26,
+   "total": 46
+  },
+  {
+   "name": "PUCPR \u00b7 rain, 195 bays (unseen car park)",
+   "image": "/samples/pucpr_rainy.jpg",
+   "layout": "/samples/pucpr_rainy_layout.json",
+   "source": "PKLot/PUCPR/Rainy/2012-10-25/2012-10-25_14_13_37.jpg",
+   "true_occupied": 115,
+   "total": 195
+  },
+  {
+   "name": "CNRPark-EXT camera 5 \u00b7 sunny, low camera (known failure)",
+   "image": "/samples/cnrcam5_sunny.jpg",
+   "layout": "/samples/cnrcam5_sunny_layout.json",
+   "source": "CNRPark-EXT/camera5/SUNNY/2015-11-12/2015-11-12_14_17_00.jpg",
+   "true_occupied": 43,
+   "total": 55
+  },
+  {
+   "name": "CNRPark-EXT camera 1 \u00b7 rain, trees in view",
+   "image": "/samples/cnrcam1_rainy.jpg",
+   "layout": "/samples/cnrcam1_rainy_layout.json",
+   "source": "CNRPark-EXT/camera1/RAINY/2016-01-08/2016-01-08_13_49_00.jpg",
+   "true_occupied": 26,
+   "total": 35
+  }
+ ],
+ "sequences": [
+  {
+   "name": "UFPR05, Monday 11 March 2013",
+   "layout": "/samples/ufpr05_day/layout.json",
+   "frames": [
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_06_20_00.jpg",
+     "time": "06:20",
+     "true_occupied": 0,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_07_05_01.jpg",
+     "time": "07:05",
+     "true_occupied": 5,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_07_50_02.jpg",
+     "time": "07:50",
+     "true_occupied": 44,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_08_35_03.jpg",
+     "time": "08:35",
+     "true_occupied": 45,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_09_20_03.jpg",
+     "time": "09:20",
+     "true_occupied": 46,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_10_05_04.jpg",
+     "time": "10:05",
+     "true_occupied": 46,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_10_50_05.jpg",
+     "time": "10:50",
+     "true_occupied": 45,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_11_35_06.jpg",
+     "time": "11:35",
+     "true_occupied": 43,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_12_25_07.jpg",
+     "time": "12:25",
+     "true_occupied": 40,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_13_15_08.jpg",
+     "time": "13:15",
+     "true_occupied": 44,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_14_05_09.jpg",
+     "time": "14:05",
+     "true_occupied": 44,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_14_50_10.jpg",
+     "time": "14:50",
+     "true_occupied": 44,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_15_35_11.jpg",
+     "time": "15:35",
+     "true_occupied": 44,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_16_20_12.jpg",
+     "time": "16:20",
+     "true_occupied": 40,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_17_05_13.jpg",
+     "time": "17:05",
+     "true_occupied": 32,
+     "total": 46
+    },
+    {
+     "image": "/samples/ufpr05_day/2013-03-11_17_50_13.jpg",
+     "time": "17:50",
+     "true_occupied": 30,
+     "total": 46
+    }
+   ]
+  }
+ ],
+ "licence": "PKLot images: CC BY 4.0 (de Almeida et al., 2015). CNRPark-EXT images: ODbL v1.0 (Amato et al., 2017). Bay polygons: MetaPKLot (DSBD-Research)."
+}

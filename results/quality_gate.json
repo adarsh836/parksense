@@ -1,0 +1,5 @@
+{
+ "description": "Frame-level 'needs review' warnings in app/main.py. Measured on 300 random PKLot/CNRPark frames and degraded copies (night: x0.22 + blue cast + noise; fog: blend 35-65% toward grey 205; blur: Gaussian sigma 2.5-5). Quality measured on a 320 px wide grey copy.",
+ "thresholds": {"brightness_lt": 50, "relative_contrast_lt": 0.2, "laplacian_variance_lt": 300},
+ "flag_rate": {"real_frames": 0.02, "simulated_night": 1.0, "simulated_fog": 0.917, "simulated_blur": 0.88}
+}

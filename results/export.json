@@ -1,0 +1,14 @@
+{
+ "source_run": "cnn_multi_photo_s0",
+ "fp32": {
+  "size_kb": 375.5,
+  "test_acc": 0.9539506935474813,
+  "ms_per_slot_1thread": 0.895
+ },
+ "int8": {
+  "size_kb": 107.6,
+  "test_acc": 0.9538664570112877,
+  "ms_per_slot_1thread": 0.4832
+ },
+ "int8_vs_fp32_agreement": 0.998624136575504
+}

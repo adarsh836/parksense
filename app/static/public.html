@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParkSense · free parking now</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="/static/favicon.svg">
+</head>
+<body>
+<header class="bar">
+  <a class="logo" href="/public"><span class="p">P</span>ParkSense</a>
+  <nav><a href="/">Operator</a><a href="/public" aria-current="page">Public view</a><a href="/help">Help</a></nav>
+</header>
+<main class="public">
+  <h1>Free parking right now</h1>
+  <p class="meta">Counts only. No camera images are shown or kept. Updated by the car-park operator; this page refreshes every 30 seconds.</p>
+  <div class="lots" id="lots"></div>
+</main>
+<script>
+function ago(t) {
+  const s = Math.round(Date.now() / 1000 - t);
+  return s < 60 ? "just now" : s < 3600 ? Math.round(s / 60) + " min ago" : Math.round(s / 3600) + " h ago";
+}
+async function load() {
+  const lots = await (await fetch("/api/lots")).json();
+  const el = document.getElementById("lots"); el.innerHTML = "";
+  const names = Object.keys(lots);
+  if (!names.length) {
+    el.innerHTML = "<p>No car park has published counts yet. Operators publish from the <a href='/'>operator console</a> after checking an image.</p>";
+    return;
+  }
+  for (const n of names) {
+    const l = lots[n].latest, full = l.free === 0;
+    const d = document.createElement("div"); d.className = "sign" + (full ? " full" : "");
+    d.innerHTML = `<div class="lotname"></div>
+      <div class="top"><div class="bigp" aria-hidden="true">P</div>
+      <div><div class="count">${full ? "FULL" : l.free}</div><div class="of">${full ? "no free bays" : "free of " + l.total + " bays"}</div></div></div>
+      <div class="legend"><span>${l.unsure ? l.unsure + " bays uncertain" : "All bays checked"}</span><span>Updated ${ago(l.t)}</span></div>`;
+    d.querySelector(".lotname").textContent = n;
+    el.append(d);
+  }
+}
+load(); setInterval(load, 30000);
+</script>
+</body>
+</html>

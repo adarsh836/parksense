@@ -1,0 +1,287 @@
+{
+ "arm": "cnn_multi_photo",
+ "seeds_averaged_for_analysis": 1,
+ "ece": {
+  "UFPR04 test": 0.00600048934676811,
+  "Unseen car parks + cameras": 0.03397885547162422
+ },
+ "unsure_band": [
+  {
+   "band": "0.50-0.50",
+   "group": "UFPR04 test",
+   "unsure_share": 0.0,
+   "acc_on_sure": 0.9959704499664204
+  },
+  {
+   "band": "0.50-0.50",
+   "group": "Unseen",
+   "unsure_share": 0.0,
+   "acc_on_sure": 0.9455121720952189
+  },
+  {
+   "band": "0.40-0.60",
+   "group": "UFPR04 test",
+   "unsure_share": 0.00335795836131636,
+   "acc_on_sure": 0.996967654986523
+  },
+  {
+   "band": "0.40-0.60",
+   "group": "Unseen",
+   "unsure_share": 0.010418774023872146,
+   "acc_on_sure": 0.9495723874748714
+  },
+  {
+   "band": "0.30-0.70",
+   "group": "UFPR04 test",
+   "unsure_share": 0.007051712558764245,
+   "acc_on_sure": 0.9974636455867433
+  },
+  {
+   "band": "0.30-0.70",
+   "group": "Unseen",
+   "unsure_share": 0.022692022388562938,
+   "acc_on_sure": 0.9541831982059686
+  },
+  {
+   "band": "0.25-0.75",
+   "group": "UFPR04 test",
+   "unsure_share": 0.009570181329751515,
+   "acc_on_sure": 0.9979657569079505
+  },
+  {
+   "band": "0.25-0.75",
+   "group": "Unseen",
+   "unsure_share": 0.02862634027918265,
+   "acc_on_sure": 0.9564025131035441
+  },
+  {
+   "band": "0.20-0.80",
+   "group": "UFPR04 test",
+   "unsure_share": 0.01326393552719951,
+   "acc_on_sure": 0.9979581419091373
+  },
+  {
+   "band": "0.20-0.80",
+   "group": "Unseen",
+   "unsure_share": 0.03702205138579806,
+   "acc_on_sure": 0.9586134453781513
+  },
+  {
+   "band": "0.10-0.90",
+   "group": "UFPR04 test",
+   "unsure_share": 0.024513096037609095,
+   "acc_on_sure": 0.9986230636833047
+  },
+  {
+   "band": "0.10-0.90",
+   "group": "Unseen",
+   "unsure_share": 0.06113021781644079,
+   "acc_on_sure": 0.9648410845753277
+  }
+ ],
+ "confusion": {
+  "UFPR04": {
+   "TN (free\u2192free)": 3788,
+   "FP (free\u2192occupied)": 24,
+   "FN (occupied\u2192free)": 0,
+   "TP (occupied\u2192occupied)": 2144,
+   "acc": 0.9959704499664204,
+   "count_mae": 0.14634146341463414,
+   "count_mae_pct": 0.3983425934645447,
+   "images": 164
+  },
+  "UFPR05": {
+   "TN (free\u2192free)": 2202,
+   "FP (free\u2192occupied)": 72,
+   "FN (occupied\u2192free)": 16,
+   "TP (occupied\u2192occupied)": 3230,
+   "acc": 0.9840579710144928,
+   "count_mae": 0.65,
+   "count_mae_pct": 1.4130434782608696,
+   "images": 120
+  },
+  "PUCPR": {
+   "TN (free\u2192free)": 9504,
+   "FP (free\u2192occupied)": 144,
+   "FN (occupied\u2192free)": 134,
+   "TP (occupied\u2192occupied)": 7768,
+   "acc": 0.9841595441595442,
+   "count_mae": 2.066666666666667,
+   "count_mae_pct": 1.0598290598290596,
+   "images": 90
+  },
+  "CNRPark-EXT": {
+   "TN (free\u2192free)": 3039,
+   "FP (free\u2192occupied)": 78,
+   "FN (occupied\u2192free)": 1172,
+   "TP (occupied\u2192occupied)": 2299,
+   "acc": 0.810261080752884,
+   "count_mae": 7.345679012345679,
+   "count_mae_pct": 16.8446017349045,
+   "images": 162
+  }
+ },
+ "per_cnr_camera": {
+  "CNR-cam1": 0.8047619047619048,
+  "CNR-cam2": 0.9388888888888889,
+  "CNR-cam3": 0.8285024154589372,
+  "CNR-cam4": 0.9082687338501292,
+  "CNR-cam5": 0.693939393939394,
+  "CNR-cam6": 0.802020202020202,
+  "CNR-cam7": 0.7987421383647799,
+  "CNR-cam8": 0.8929292929292929,
+  "CNR-cam9": 0.7342342342342343
+ },
+ "per_hour_band": {
+  "05-09h": {
+   "acc": 0.981161971830986,
+   "n": 5680
+  },
+  "09-12h": {
+   "acc": 0.9271577468087598,
+   "n": 8539
+  },
+  "12-15h": {
+   "acc": 0.9477094464021826,
+   "n": 8797
+  },
+  "15-18h": {
+   "acc": 0.956172140430351,
+   "n": 8830
+  },
+  "18-22h": {
+   "acc": 0.9830148619957537,
+   "n": 3768
+  }
+ },
+ "failures": [
+  {
+   "site": "CNRPark-EXT",
+   "weather": "Cloudy",
+   "file": "CNRPark-EXT/camera5/OVERCAST/2015-12-18/2015-12-18_11_56_00.jpg",
+   "spot_id": 25000012547,
+   "true": "occupied",
+   "p_occupied": 9.28517783904681e-06
+  },
+  {
+   "site": "CNRPark-EXT",
+   "weather": "Sunny",
+   "file": "CNRPark-EXT/camera8/SUNNY/2016-01-12/2016-01-12_11_59_00.jpg",
+   "spot_id": 28000017602,
+   "true": "occupied",
+   "p_occupied": 9.36159813136328e-06
+  },
+  {
+   "site": "CNRPark-EXT",
+   "weather": "Cloudy",
+   "file": "CNRPark-EXT/camera6/OVERCAST/2015-11-25/2015-11-25_12_48_00.jpg",
+   "spot_id": 26000006186,
+   "true": "occupied",
+   "p_occupied": 1.2983507076569367e-05
+  },
+  {
+   "site": "CNRPark-EXT",
+   "weather": "Sunny",
+   "file": "CNRPark-EXT/camera1/SUNNY/2016-01-12/2016-01-12_15_17_00.jpg",
+   "spot_id": 21000011449,
+   "true": "occupied",
+   "p_occupied": 1.3453252904582769e-05
+  },
+  {
+   "site": "UFPR05",
+   "weather": "Cloudy",
+   "file": "PKLot/UFPR05/Cloudy/2013-04-13/2013-04-13_11_50_06.jpg",
+   "spot_id": 13000094525,
+   "true": "free",
+   "p_occupied": 0.9995692372322083
+  },
+  {
+   "site": "UFPR05",
+   "weather": "Sunny",
+   "file": "PKLot/UFPR05/Sunny/2013-03-02/2013-03-02_08_35_03.jpg",
+   "spot_id": 13000023961,
+   "true": "free",
+   "p_occupied": 0.9992343187332153
+  },
+  {
+   "site": "UFPR05",
+   "weather": "Sunny",
+   "file": "PKLot/UFPR05/Sunny/2013-04-11/2013-04-11_07_20_01.jpg",
+   "spot_id": 13000107271,
+   "true": "free",
+   "p_occupied": 0.9991971850395203
+  },
+  {
+   "site": "PUCPR",
+   "weather": "Rainy",
+   "file": "PKLot/PUCPR/Rainy/2012-11-09/2012-11-09_19_22_08.jpg",
+   "spot_id": 11000800852,
+   "true": "occupied",
+   "p_occupied": 0.0013180382084101439
+  },
+  {
+   "site": "PUCPR",
+   "weather": "Rainy",
+   "file": "PKLot/PUCPR/Rainy/2012-11-09/2012-11-09_19_02_07.jpg",
+   "spot_id": 11000799901,
+   "true": "occupied",
+   "p_occupied": 0.0013601466780528426
+  },
+  {
+   "site": "UFPR05",
+   "weather": "Sunny",
+   "file": "PKLot/UFPR05/Sunny/2013-04-11/2013-04-11_08_40_03.jpg",
+   "spot_id": 13000101701,
+   "true": "free",
+   "p_occupied": 0.9984532594680786
+  },
+  {
+   "site": "PUCPR",
+   "weather": "Sunny",
+   "file": "PKLot/PUCPR/Sunny/2012-10-15/2012-10-15_14_56_03.jpg",
+   "spot_id": 11000488901,
+   "true": "free",
+   "p_occupied": 0.997812032699585
+  },
+  {
+   "site": "PUCPR",
+   "weather": "Cloudy",
+   "file": "PKLot/PUCPR/Cloudy/2012-10-16/2012-10-16_14_58_46.jpg",
+   "spot_id": 11000156981,
+   "true": "occupied",
+   "p_occupied": 0.002208596793934703
+  },
+  {
+   "site": "UFPR04",
+   "weather": "Sunny",
+   "file": "PKLot/UFPR04/Sunny/2012-12-12/2012-12-12_19_25_16.jpg",
+   "spot_id": 12000005173,
+   "true": "free",
+   "p_occupied": 0.9749871492385864
+  },
+  {
+   "site": "UFPR04",
+   "weather": "Sunny",
+   "file": "PKLot/UFPR04/Sunny/2012-12-24/2012-12-24_14_20_09.jpg",
+   "spot_id": 12000134737,
+   "true": "free",
+   "p_occupied": 0.9740239381790161
+  },
+  {
+   "site": "UFPR04",
+   "weather": "Rainy",
+   "file": "PKLot/UFPR04/Rainy/2013-01-21/2013-01-21_07_40_02.jpg",
+   "spot_id": 12000090156,
+   "true": "free",
+   "p_occupied": 0.9541597366333008
+  },
+  {
+   "site": "UFPR04",
+   "weather": "Rainy",
+   "file": "PKLot/UFPR04/Rainy/2012-12-26/2012-12-26_17_10_13.jpg",
+   "spot_id": 12000090477,
+   "true": "free",
+   "p_occupied": 0.9433549046516418
+  }
+ ]
+}

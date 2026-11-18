@@ -1,0 +1,54 @@
+{
+ "free bays": {
+  "n_dry": 1682,
+  "n_real_rain": 2130,
+  "FD_features dry->real_rain": 0.1395908104158393,
+  "FD_features synthetic->real_rain": 0.13207210630046978,
+  "FD_colour dry->real_rain": 0.6800969591776785,
+  "FD_colour synthetic->real_rain": 0.5976783943722407,
+  "mean saturation dry/synthetic/real": [
+   0.07977494597434998,
+   0.07722314447164536,
+   0.06954114139080048
+  ],
+  "mean brightness dry/synthetic/real": [
+   0.6698125600814819,
+   0.6673263311386108,
+   0.6617959141731262
+  ],
+  "mean contrast dry/synthetic/real": [
+   0.10579684376716614,
+   0.10570795834064484,
+   0.0852675512433052
+  ]
+ },
+ "occupied bays": {
+  "n_dry": 1608,
+  "n_real_rain": 536,
+  "FD_features dry->real_rain": 0.5606202714063888,
+  "FD_features synthetic->real_rain": 0.5900562597322938,
+  "FD_colour dry->real_rain": 4.0517764712520306,
+  "FD_colour synthetic->real_rain": 4.257541934147485,
+  "mean saturation dry/synthetic/real": [
+   0.14291800558567047,
+   0.14322468638420105,
+   0.11390678584575653
+  ],
+  "mean brightness dry/synthetic/real": [
+   0.5917194485664368,
+   0.5897665619850159,
+   0.6380618810653687
+  ],
+  "mean contrast dry/synthetic/real": [
+   0.20043307542800903,
+   0.2002282738685608,
+   0.18664884567260742
+  ]
+ },
+ "label_preservation": {
+  "acc_on_original": 0.994224924012158,
+  "acc_on_translated": 0.993920972644377,
+  "prediction_agreement": 0.9996960486322188,
+  "mean_abs_pixel_change": 0.49149009585380554
+ }
+}

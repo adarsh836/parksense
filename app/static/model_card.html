@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParkSense · model card</title><link rel="stylesheet" href="/static/style.css"><link rel="icon" href="/static/favicon.svg"></head>
+<body><header class="bar"><a class="logo" href="/"><span class="p">P</span>ParkSense</a>
+<nav><a href="/">Operator</a><a href="/public">Public view</a><a href="/help">Help</a><a href="/model-card" aria-current="page">Model card</a></nav></header>
+<main class="doc"><h1>Model card: ParkSense bay-occupancy classifier</h1>
+<p><b>Model:</b> ParkNet, a 4-block CNN (≈0.1 M parameters) trained from scratch; deployed as ONNX int8 (108 KB).</p>
+<p><b>Version:</b> <code>cnn_multi_photo_s0</code> (training arm <code>cnn_multi_photo</code>), exported 2026-11.</p>
+<p><b>Input:</b> a 64×64 perspective-rectified crop of one parking bay, outlined once by the operator.</p>
+<p><b>Output:</b> calibrated P(occupied) (temperature scaling, T ≈ 0.47). The app shows <i>free</i> (P ≤ 0.25), <i>occupied</i> (P ≥ 0.75) or <i>not sure</i>.</p>
+<h2>Intended use</h2>
+<ul>
+<li>Counting free and occupied bays in <b>open-air car parks</b> watched by a <b>fixed, elevated camera</b>, in <b>daylight</b>.</li>
+<li>Decision support for a car-park operator, who reviews &quot;not sure&quot; bays and can override any bay before counts are published.</li>
+<li>Public display of <b>counts only</b>.</li>
+</ul>
+<h2>Out-of-scope use</h2>
+<ul>
+<li>Reading licence plates, identifying vehicles or people, tracking individuals, enforcement or fines.</li>
+<li>Night-time, indoor/multi-storey car parks, moving or handheld cameras, street-level views.</li>
+<li>Safety-critical or fully automatic decisions (e.g. barrier control) without human review.</li>
+</ul>
+<h2>Training data</h2>
+<ul>
+<li>PKLot (CC BY 4.0): car park <b>UFPR04</b> (Sunny + Cloudy training days, 7,499 bays from 207 frames) plus <b>160 frames from UFPR05 and PUCPR</b> (16,300 bays) taken only from days with no test frame: 23,799 labelled bays in total.</li>
+<li>No generated data in this arm.</li>
+<li>Splits are by <b>day</b>, so no day appears in both training and test.</li>
+</ul>
+<h2>Evaluation data (never used for training)</h2>
+<ul>
+<li>UFPR04 held-out days (sunny/cloudy) and real <b>rainy</b> days.</li>
+<li>PKLot UFPR05 and PUCPR test frames (sunny, cloudy, rainy) from days not used for training. The protocol experiment, trained on UFPR04 alone, reached 96.2% on these unseen car parks (see the report).</li>
+<li><b>Unseen camera set:</b> CNRPark-EXT, 9 cameras in Pisa, Italy (sunny, overcast, rainy).</li>
+</ul>
+<h2>Metrics (1 training seed)</h2>
+<table><tr><th>Test group</th><th>Accuracy</th><th>Macro-F1</th><th>Occupied-count error (bays/image)</th><th>Classical baseline accuracy</th></tr>
+<tr><td>UFPR04, held-out dry days</td><td>99.7%</td><td>0.997</td><td>0.10</td><td>93.2%</td></tr>
+<tr><td>UFPR04, real rain (held-out days)</td><td>99.4%</td><td>0.991</td><td>0.20</td><td>94.7%</td></tr>
+<tr><td>UFPR05 + PUCPR, held-out days</td><td>98.4%</td><td>0.984</td><td>1.26</td><td>90.2%</td></tr>
+<tr><td>CNRPark-EXT (unseen camera set)</td><td>81.0%</td><td>0.808</td><td>7.35</td><td>87.9%</td></tr>
+</table>
+<h3>Subgroups (car park × weather)</h3>
+<table><tr><th>Car park</th><th>Weather</th><th>Bays</th><th>Accuracy</th><th>Count error</th></tr>
+<tr><td>UFPR04</td><td>Sunny</td><td>1830</td><td>99.5%</td><td>0.18</td></tr>
+<tr><td>UFPR04</td><td>Cloudy</td><td>1460</td><td>100.0%</td><td>0.00</td></tr>
+<tr><td>UFPR04</td><td>Rainy</td><td>2666</td><td>99.4%</td><td>0.20</td></tr>
+<tr><td>UFPR05</td><td>Sunny</td><td>1840</td><td>97.9%</td><td>0.82</td></tr>
+<tr><td>UFPR05</td><td>Cloudy</td><td>1840</td><td>98.8%</td><td>0.57</td></tr>
+<tr><td>UFPR05</td><td>Rainy</td><td>1840</td><td>98.6%</td><td>0.55</td></tr>
+<tr><td>PUCPR</td><td>Sunny</td><td>5850</td><td>97.9%</td><td>2.77</td></tr>
+<tr><td>PUCPR</td><td>Cloudy</td><td>5850</td><td>98.9%</td><td>1.97</td></tr>
+<tr><td>PUCPR</td><td>Rainy</td><td>5850</td><td>98.5%</td><td>1.47</td></tr>
+<tr><td>CNRPark-EXT</td><td>Sunny</td><td>2196</td><td>77.6%</td><td>8.59</td></tr>
+<tr><td>CNRPark-EXT</td><td>Cloudy</td><td>2196</td><td>76.7%</td><td>9.31</td></tr>
+<tr><td>CNRPark-EXT</td><td>Rainy</td><td>2196</td><td>88.8%</td><td>4.13</td></tr>
+</table>
+<ul>
+<li>Per CNRPark camera: cam 1: 80.5%, cam 2: 93.9%, cam 3: 82.9%, cam 4: 90.8%, cam 5: 69.4%, cam 6: 80.2%, cam 7: 79.9%, cam 8: 89.3%, cam 9: 73.4%.</li>
+<li>By time of day: 05-09h: 98.1%, 09-12h: 92.7%, 12-15h: 94.8%, 15-18h: 95.6%, 18-22h: 98.3%.</li>
+<li>Calibration (expected calibration error): UFPR04 test 0.006, Unseen car parks + cameras 0.034.</li>
+<li>&quot;Not sure&quot; band 0.25–0.75: UFPR04 test: 1.0% of bays flagged, 99.8% accurate on the rest; Unseen: 2.9% of bays flagged, 95.6% accurate on the rest.</li>
+<li><b>New-camera calibration</b> (CNRPark-EXT, mean of 9 cameras): 82.2% with no labelled frames, 86.5% after 1 operator-labelled frame, 91.2% after 3.</li>
+<li><b>Frame-quality warnings</b> flag 100.0% of simulated night, 91.7% of fog and 88.0% of blurred frames, with 2.0% false alarms on real frames.</li>
+</ul>
+<h3>Stress tests (accuracy on altered UFPR04 test frames)</h3>
+<table><tr><th>Set</th><th>Accuracy</th></tr>
+<tr><td>clean (UFPR04 dry test days)</td><td>99.7%</td></tr>
+<tr><td>real rain (UFPR04 rainy test days)</td><td>99.4%</td></tr>
+<tr><td>sim night (classical)</td><td>95.1%</td></tr>
+<tr><td>sim fog (classical)</td><td>99.2%</td></tr>
+<tr><td>cyclegan_rain</td><td>99.6%</td></tr>
+</table>
+<h2>Speed</h2>
+<ul>
+<li>int8 ONNX, one CPU thread: 0.48 ms per bay; int8 and fp32 agree on 99.9% of test bays.</li>
+<li><code>http://localhost:8000</code>: server time 26–118 ms per image (28–195 bays)</li>
+</ul>
+<h2>Known failures</h2>
+<ul>
+<li><b>New camera geometry:</b> accuracy drops on CNRPark-EXT. Low cameras see cars from behind or in front rather than from above; the model mostly misses those cars (false &quot;free&quot;). On unseen cameras most errors are <i>confident</i>, so the &quot;not sure&quot; band does not catch them: calibrate a new camera with 3 labelled frames.</li>
+<li><b>Night and fog:</b> simulated night and fog push accuracy to near chance (see stress tests). The app warns on dark, low-contrast and blurred frames.</li>
+<li><b>Occlusion:</b> bays fully under tree canopy cannot be read from the image (remove them from the layout); poles and vehicles straddling two bays cause errors both ways.</li>
+<li><b>Dark or shadowed vehicles</b> on dark, wet asphalt can be missed (false &quot;free&quot;).</li>
+<li><b>Hard tree shadows</b> on sunny days: PUCPR sunny is the hardest PKLot subgroup.</li>
+<li><b>Label policy:</b> motorbikes in a bay are counted as occupied; some datasets label them free.</li>
+<li>See <code>results/gallery/failures.jpg</code> for the most confident mistakes.</li>
+</ul>
+<h2>Ethical considerations</h2>
+<ul>
+<li>No personal data is needed or produced. Images are processed in memory and not stored.</li>
+<li>Cameras can capture people and plates incidentally: point them at the bays, use signage, and never publish frames.</li>
+<li>The data come from Brazil and Italy; other countries&#x27; bay markings, vehicles and climates are untested.</li>
+<li>Before publishing counts from a new camera, correct its first 3 frames in the app (calibration) and spot-check about 20 frames against a manual count.</li>
+</ul></main></body></html>

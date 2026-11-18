@@ -1,0 +1,7 @@
+# Runtime only (Render free web service). Training deps: requirements-train.txt
+fastapi==0.163.1
+uvicorn==0.54.0
+python-multipart>=0.0.20
+onnxruntime==1.29.0
+opencv-python-headless==5.0.0.93
+numpy==2.5.3

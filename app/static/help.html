@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParkSense · help</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="/static/favicon.svg">
+</head>
+<body>
+<header class="bar">
+  <a class="logo" href="/"><span class="p">P</span>ParkSense</a>
+  <nav><a href="/">Operator</a><a href="/public">Public view</a><a href="/help" aria-current="page">Help</a><a href="/model-card">Model card</a></nav>
+</header>
+<main class="doc">
+  <h1>How to use ParkSense</h1>
+  <p>ParkSense counts free and occupied bays in an open-air car park from a single fixed camera. You outline the bays once; after that every new image from the same camera is checked in a few seconds.</p>
+
+  <h2>Set up a camera</h2>
+  <ol>
+    <li>Load an image from the camera (or pick a sample).</li>
+    <li>In <b>Outline bays</b> mode, click the four corners of each bay. Follow the painted lines. Include the whole bay, not just the middle.</li>
+    <li>Click <b>Save layout</b>. Next time, load the image and then the layout file. Layouts are stretched automatically if the image size changes, but the camera must not move.</li>
+  </ol>
+
+  <h2>Read the results</h2>
+  <table>
+    <tr><th>Mark</th><th>Meaning</th></tr>
+    <tr><td><span class="sw free"></span> F</td><td>Free. The model is at least 75% sure the bay is empty.</td></tr>
+    <tr><td><span class="sw occ"></span> O</td><td>Occupied. The model is at least 75% sure a vehicle is there.</td></tr>
+    <tr><td><span class="sw uns"></span> ?</td><td>Not sure. Check the bay by eye and click it to set the answer. Bays you set are marked with *.</td></tr>
+  </table>
+  <p>A warning appears when the whole image is too dark, too low-contrast (fog, glare) or blurred. Treat those counts as rough.</p>
+
+  <h2>Which method to use</h2>
+  <table>
+    <tr><th>Method</th><th>When</th></tr>
+    <tr><td>CNN classifier</td><td>Default. Most accurate on cameras looking down on the bays from a height, like the PKLot car parks.</td></tr>
+    <tr><td>CNN + baseline</td><td>A new camera with a lower, more oblique view. The average of both methods made fewer counting mistakes on cameras the CNN had never seen.</td></tr>
+    <tr><td>Classical baseline</td><td>For comparison. Simple edge and colour rules; fast, but less accurate on familiar cameras.</td></tr>
+  </table>
+  <p>For a new camera, check the first few images carefully and correct the bays that are wrong. A handful of corrected images is what it takes to adapt the model to a new camera (see the model card).</p>
+
+  <h2>Occupancy over time</h2>
+  <p>Choose several frames from the same camera. ParkSense applies the current layout to each and plots the share of occupied bays. The shaded band shows how high occupancy could be if every "not sure" bay were occupied.</p>
+
+  <h2>Public view</h2>
+  <p>After checking an image, click <b>Publish counts</b>. The <a href="/public">public page</a> shows only the number of free bays per car park. Images are never published, stored or logged.</p>
+
+  <h2>Known limits</h2>
+  <ul>
+    <li>Trained on one Brazilian car park (UFPR04) in daylight. Accuracy is lower on unseen car parks, in heavy rain, and when trees or lamp posts cover a bay. See the <a href="/model-card">model card</a>.</li>
+    <li>Not tested at night. The night warning is a brightness check, not a guarantee.</li>
+    <li>Motorbikes, people or objects in a bay may be counted as occupied.</li>
+    <li>The free server sleeps after 15 idle minutes; the first check after that takes about a minute.</li>
+  </ul>
+
+  <h2>Responsible use</h2>
+  <p>ParkSense does not read licence plates or identify vehicles or people, and it must not be used to do so. Put up signage that tells drivers the car park is monitored for occupancy counts, and point the camera at the bays, not at entrances, footpaths or neighbouring property.</p>
+</main>
+</body>
+</html>

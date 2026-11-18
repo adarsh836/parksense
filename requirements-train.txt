@@ -1,0 +1,5 @@
+-r requirements.txt
+torch>=2.4
+onnx
+onnxscript
+scikit-learn

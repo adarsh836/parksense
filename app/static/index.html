@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParkSense · operator console</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="/static/favicon.svg">
+</head>
+<body>
+<header class="bar">
+  <a class="logo" href="/"><span class="p">P</span>ParkSense</a>
+  <nav><a href="/" aria-current="page">Operator</a><a href="/public">Public view</a><a href="/help">Help</a><a href="/model-card">Model card</a></nav>
+</header>
+
+<main class="console">
+  <section>
+    <div class="frame" id="frame">
+      <div class="empty" id="empty">
+        <div>
+          <h1 style="margin:0 0 .5rem;font-size:1.6rem">Count free bays from one camera</h1>
+          <p>Load a car-park photo, outline each bay once, and ParkSense marks every bay as free, occupied or not sure. Start with a sample car park on the right, or upload your own image.</p>
+        </div>
+      </div>
+      <canvas id="cv" hidden aria-label="Car-park image with parking-bay outlines"></canvas>
+      <div class="toolbar" id="tools" hidden>
+        <button id="mode-draw" class="on" aria-pressed="true">Outline bays</button>
+        <button id="mode-review" aria-pressed="false">Review results</button>
+        <button id="undo">Undo point</button>
+        <button id="del">Delete selected bay</button>
+        <button id="clear">Clear all bays</button>
+      </div>
+      <p class="hint" id="hint" hidden>Click the four corners of a bay, in any order around it. The bay closes after the fourth click. Click inside a bay to select it.</p>
+    </div>
+  </section>
+
+  <aside class="rail">
+    <div class="step">
+      <h2><span class="n">1</span>Load a car-park image</h2>
+      <label class="field" for="sample">Sample car parks (PKLot, CNRPark-EXT)</label>
+      <select id="sample"><option value="">Choose a sample…</option></select>
+      <label class="field" for="file">Or upload your own image (JPG or PNG)</label>
+      <input type="file" id="file" accept="image/*">
+    </div>
+
+    <div class="step">
+      <h2><span class="n">2</span>Outline the bays once</h2>
+      <p><span id="nslots">0</span> bays outlined. Save the layout and reuse it for every image from the same camera.</p>
+      <div class="row">
+        <button id="export">Save layout</button>
+        <label class="btn" for="import">Load layout</label>
+        <input type="file" id="import" accept=".json,application/json" hidden>
+      </div>
+    </div>
+
+    <div class="step">
+      <h2><span class="n">3</span>Check occupancy</h2>
+      <label class="field" for="model">Method</label>
+      <select id="model">
+        <option value="cnn">CNN classifier (recommended)</option>
+        <option value="combined">CNN + baseline (for a new camera)</option>
+        <option value="baseline">Classical baseline (edges + colour)</option>
+      </select>
+      <div class="row" style="margin-top:.7rem">
+        <button class="primary" id="run" disabled>Check occupancy</button>
+      </div>
+      <div id="msg"></div>
+    </div>
+
+    <div class="sign" id="sign" hidden aria-live="polite">
+      <div class="top">
+        <div class="bigp" aria-hidden="true">P</div>
+        <div><div class="count" id="s-free">–</div><div class="of" id="s-of">free bays</div></div>
+      </div>
+      <div class="meter" id="s-meter"></div>
+      <div class="legend">
+        <span><i class="sw free"></i>Free <b id="s-f">0</b></span>
+        <span><i class="sw occ"></i>Occupied <b id="s-o">0</b></span>
+        <span><i class="sw uns"></i>Not sure <b id="s-u">0</b></span>
+      </div>
+    </div>
+
+    <div class="step" id="review" hidden>
+      <h2>Bays to check by eye</h2>
+      <p>The model is not sure about these bays. Click a bay on the image (or a button below) to set it yourself; your answer replaces the model's.</p>
+      <ul class="review-list" id="review-list"></ul>
+      <label class="field" for="lot">Car park name on the public page</label>
+      <input type="text" id="lot" value="Main car park">
+      <div class="row" style="margin-top:.6rem"><button id="publish">Publish counts</button></div>
+      <p class="meta">Only the counts are published. The image is never stored or shown publicly.</p>
+      <p class="meta" id="timing"></p>
+    </div>
+  </aside>
+
+  <div class="chart-wrap">
+    <h2>Occupancy over time</h2>
+    <p class="meta" style="margin:.1rem 0 .6rem">Select several frames from the same camera (file names with a time, e.g. 2013-03-12_08_15_00.jpg, are plotted in time order). The current bay layout is applied to every frame.</p>
+    <div class="row">
+      <label class="btn" for="seq">Choose frames</label><input type="file" id="seq" accept="image/*" multiple hidden>
+      <button id="seq-sample">Run the sample day (UFPR05)</button>
+      <span class="meta" id="seq-status"></span>
+    </div>
+    <canvas id="chart" height="260"></canvas>
+  </div>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>
