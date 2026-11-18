@@ -34,7 +34,20 @@ from parksense_core import BaselineModel, OccupancyModel, image_quality, rectify
 
 HERE = Path(__file__).parent
 MODELS = Path(os.environ.get("PARKSENSE_MODELS", HERE.parent / "models"))
-CNN_PATH = MODELS / os.environ.get("PARKSENSE_CNN", "parksense_cnn_int8.onnx")
+CNN_PATH = MODELS / os.environ.get("PARKSENSE_CNN", "parksense_cnn_fp32.onnx")
+
+
+def _cpu_flags():
+    """int8 ONNX kernels give different answers on x86 CPUs without VNNI (u8s8 saturation),
+    so the deployed default is the fp32 model; health reports the CPU so this can be checked."""
+    try:
+        for line in open("/proc/cpuinfo"):
+            if line.startswith("flags"):
+                f = set(line.split(":")[1].split())
+                return {"avx2": "avx2" in f, "avx512_vnni": "avx512_vnni" in f, "avx_vnni": "avx_vnni" in f}
+    except OSError:
+        pass
+    return {}
 STARTED = time.time()
 
 # Decision thresholds on the calibrated P(occupied). Inside the band -> "not sure".
@@ -82,7 +95,7 @@ def model_card():
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "uptime_s": round(time.time() - STARTED, 1), "model": CNN_PATH.name}
+    return {"ok": True, "uptime_s": round(time.time() - STARTED, 1), "model": CNN_PATH.name, "cpu": _cpu_flags()}
 
 
 @app.get("/api/samples")

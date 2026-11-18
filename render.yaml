@@ -13,3 +13,5 @@ services:
         value: 3.13.1
       - key: OMP_NUM_THREADS
         value: "1"
+      - key: PARKSENSE_CNN
+        value: parksense_cnn_fp32.onnx
