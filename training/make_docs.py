@@ -9,7 +9,7 @@ ST = R("stress.json") if os.path.exists(os.path.join(ROOT, "results", "stress.js
 arm = E["arm"]; s = S[arm]; b = S["baseline_logreg"]
 LAT = {}
 for f in os.listdir(os.path.join(ROOT, "results")):
-    if f.startswith("latency_"):
+    if f.startswith("latency_") and "localhost" not in f:
         LAT[f] = R(f)
 
 
@@ -35,13 +35,13 @@ if arm in ST:
 lat_txt = ""
 for f, v in LAT.items():
     cnn = [p for p in v["per_sample"] if p["model"] == "cnn"]
-    lat_txt += f"\n* `{v['url']}`: server time {min(p['server_ms_median'] for p in cnn):.0f}–{max(p['server_ms_median'] for p in cnn):.0f} ms per image (28–195 bays)"
+    lat_txt += f"\n* `{v['url']}`: server time {min(p.get('server_ms_median', p.get('server_ms')) for p in cnn):.0f}–{max(p.get('server_ms_median', p.get('server_ms')) for p in cnn):.0f} ms per image (35–195 bays)"
     if "cold_start_s" in v:
         lat_txt += f", cold start {v['cold_start_s']} s"
 
 md = f"""# Model card: ParkSense bay-occupancy classifier
 
-**Model:** ParkNet, a 4-block CNN ({S[arm].get('params', '~0.1 M') if False else '≈0.1 M'} parameters) trained from scratch; deployed as ONNX int8 ({X['int8']['size_kb']:.0f} KB).
+**Model:** ParkNet, a 4-block CNN ({S[arm].get('params', '~0.1 M') if False else '≈0.1 M'} parameters) trained from scratch; deployed as ONNX fp32 ({X['fp32']['size_kb']:.0f} KB). An int8 version ({X['int8']['size_kb']:.0f} KB) exists but is not deployed: it saturates on CPUs without VNNI, such as Render's.
 **Version:** `{X['source_run']}` (training arm `{arm}`), exported {X.get('date', '2026-11')}.
 **Input:** a 64×64 perspective-rectified crop of one parking bay, outlined once by the operator.
 **Output:** calibrated P(occupied) (temperature scaling, T ≈ {s['temperature']:.2f}). The app shows *free* (P ≤ 0.25), *occupied* (P ≥ 0.75) or *not sure*.
@@ -85,7 +85,7 @@ md = f"""# Model card: ParkSense bay-occupancy classifier
 {("\n### Stress tests (accuracy on altered UFPR04 test frames)\n| Set | Accuracy |\n|---|---|\n" + stress_txt) if stress_txt else ""}
 
 ## Speed
-* int8 ONNX, one CPU thread: {X['int8']['ms_per_slot_1thread']:.2f} ms per bay; int8 and fp32 agree on {pct(X['int8_vs_fp32_agreement'])} of test bays.{lat_txt}
+* fp32 ONNX, one CPU thread: {X['fp32']['ms_per_slot_1thread']:.2f} ms per bay on the build machine (int8: {X['int8']['ms_per_slot_1thread']:.2f} ms, agreeing on {pct(X['int8_vs_fp32_agreement'])} of bays there).{lat_txt}
 
 ## Known failures
 * **New camera geometry:** accuracy drops on CNRPark-EXT. Low cameras see cars from behind or in front rather than from above; the model mostly misses those cars (false "free"). On unseen cameras most errors are *confident*, so the "not sure" band does not catch them: calibrate a new camera with 3 labelled frames.

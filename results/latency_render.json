@@ -1,0 +1,192 @@
+{
+ "url": "https://parksense-oqjk.onrender.com",
+ "when": "2026-11-18 13:15 (UTC+4)",
+ "method": "browser fetch from the live page, 3 calls per sample and method, median reported",
+ "model": "parksense_cnn_fp32.onnx",
+ "server_cpu": {
+  "avx2": true,
+  "avx512_vnni": false,
+  "avx_vnni": false
+ },
+ "note": "The int8 model gave different answers on this CPU (e.g. UFPR04 sunny 18 occupied + 3 not sure instead of 22; PUCPR 109 + 5 instead of 114) because u8s8 int8 kernels saturate on x86 CPUs without VNNI. The fp32 model is deployed; its answers match the build machine exactly.",
+ "int8_first_run": [
+  {
+   "sample": "UFPR04 sunny",
+   "bays": 35,
+   "occupied": 18,
+   "unsure": 3,
+   "true_occupied": 22,
+   "server_ms": 129
+  },
+  {
+   "sample": "UFPR04 rain",
+   "bays": 35,
+   "occupied": 19,
+   "unsure": 3,
+   "true_occupied": 21,
+   "server_ms": 166
+  },
+  {
+   "sample": "UFPR05 cloudy",
+   "bays": 46,
+   "occupied": 26,
+   "unsure": 1,
+   "true_occupied": 26,
+   "server_ms": 220
+  },
+  {
+   "sample": "PUCPR rain",
+   "bays": 195,
+   "occupied": 109,
+   "unsure": 5,
+   "true_occupied": 115,
+   "server_ms": 1181
+  },
+  {
+   "sample": "CNRPark cam 5 sunny",
+   "bays": 55,
+   "occupied": 23,
+   "unsure": 8,
+   "true_occupied": 43,
+   "server_ms": 266
+  },
+  {
+   "sample": "CNRPark cam 1 rain",
+   "bays": 35,
+   "occupied": 24,
+   "unsure": 4,
+   "true_occupied": 26,
+   "server_ms": 197
+  }
+ ],
+ "per_sample": [
+  {
+   "sample": "UFPR04 sunny",
+   "model": "cnn",
+   "bays": 35,
+   "occupied": 22,
+   "unsure": 0,
+   "true_occupied": 22,
+   "server_ms": 310,
+   "round_trip_ms": 898
+  },
+  {
+   "sample": "UFPR04 sunny",
+   "model": "baseline",
+   "bays": 35,
+   "occupied": 16,
+   "unsure": 4,
+   "true_occupied": 22,
+   "server_ms": 63,
+   "round_trip_ms": 994
+  },
+  {
+   "sample": "UFPR04 rain",
+   "model": "cnn",
+   "bays": 35,
+   "occupied": 21,
+   "unsure": 2,
+   "true_occupied": 21,
+   "server_ms": 292,
+   "round_trip_ms": 865
+  },
+  {
+   "sample": "UFPR04 rain",
+   "model": "baseline",
+   "bays": 35,
+   "occupied": 9,
+   "unsure": 12,
+   "true_occupied": 21,
+   "server_ms": 95,
+   "round_trip_ms": 1008
+  },
+  {
+   "sample": "UFPR05 cloudy",
+   "model": "cnn",
+   "bays": 46,
+   "occupied": 26,
+   "unsure": 1,
+   "true_occupied": 26,
+   "server_ms": 306,
+   "round_trip_ms": 916
+  },
+  {
+   "sample": "UFPR05 cloudy",
+   "model": "baseline",
+   "bays": 46,
+   "occupied": 26,
+   "unsure": 10,
+   "true_occupied": 26,
+   "server_ms": 112,
+   "round_trip_ms": 1013
+  },
+  {
+   "sample": "PUCPR rain",
+   "model": "cnn",
+   "bays": 195,
+   "occupied": 114,
+   "unsure": 1,
+   "true_occupied": 115,
+   "server_ms": 1216,
+   "round_trip_ms": 1938
+  },
+  {
+   "sample": "PUCPR rain",
+   "model": "baseline",
+   "bays": 195,
+   "occupied": 114,
+   "unsure": 14,
+   "true_occupied": 115,
+   "server_ms": 431,
+   "round_trip_ms": 1007
+  },
+  {
+   "sample": "CNRPark cam 5 sunny",
+   "model": "cnn",
+   "bays": 55,
+   "occupied": 28,
+   "unsure": 4,
+   "true_occupied": 43,
+   "server_ms": 383,
+   "round_trip_ms": 920
+  },
+  {
+   "sample": "CNRPark cam 5 sunny",
+   "model": "baseline",
+   "bays": 55,
+   "occupied": 42,
+   "unsure": 1,
+   "true_occupied": 43,
+   "server_ms": 126,
+   "round_trip_ms": 1001
+  },
+  {
+   "sample": "CNRPark cam 1 rain",
+   "model": "cnn",
+   "bays": 35,
+   "occupied": 25,
+   "unsure": 3,
+   "true_occupied": 26,
+   "server_ms": 155,
+   "round_trip_ms": 688
+  },
+  {
+   "sample": "CNRPark cam 1 rain",
+   "model": "baseline",
+   "bays": 35,
+   "occupied": 24,
+   "unsure": 4,
+   "true_occupied": 26,
+   "server_ms": 72,
+   "round_trip_ms": 510
+  }
+ ],
+ "cold_start": {
+  "when": "2026-11-18 13:33 (UTC+4), after ~17 min idle",
+  "request_detected": "13:33:12",
+  "app_answered": "~13:33:39",
+  "cold_start_s": 27,
+  "note": "Render shows its own 'service waking up' page (HTTP 503) until the instance is ready; /api/health then reported uptime 4.3 s"
+ },
+ "cold_start_s": 27
+}

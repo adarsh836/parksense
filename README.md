@@ -4,8 +4,8 @@ MAIB AI 221 Computer Vision with Applications, Final Group Project, **Project 7 
 
 ParkSense lets a car-park operator outline the bays in one camera image, then labels every bay in later images as **free**, **occupied** or **not sure**. It shows totals, an occupancy-over-time chart, and a public page that shows **counts only, never images**.
 
-* **Live app:** `https://<your-service>.onrender.com` (Render free web service; the first request after 15 idle minutes takes about a minute)
-* **Main model:** small CNN (ParkNet, ~0.1 M parameters), ONNX int8, **108 KB**, ~0.5 ms per bay on one CPU thread; 26–119 ms per image
+* **Live app:** https://parksense-oqjk.onrender.com (Render free web service; the first request after 15 idle minutes takes about a minute)
+* **Main model:** small CNN (ParkNet, ~0.1 M parameters), ONNX fp32 **376 KB** (int8: 108 KB, not deployed because it saturates on Render's non-VNNI CPU); 0.2–1.2 s per image on Render
 * **Baseline:** edge-density + colour-variance features with logistic regression
 * **Generative AI:** CycleGAN dry→rain image-to-image translation trained on unlabelled rain footage (CPU), plus an InstructPix2Pix night/fog/rain notebook for free Colab
 * **Data:** PKLot (CC BY 4.0) and CNRPark-EXT (ODbL v1.0), with bay polygons from MetaPKLot

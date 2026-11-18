@@ -1,13 +1,13 @@
 # ParkSense: parking occupancy from a fixed camera
 
 **MAIB AI 221 Computer Vision with Applications · Final Group Project · Project 7 (Smart city and transport)**
-Student: _________ · Live app: `https://<service>.onrender.com` · Repository: https://github.com/adarsh836/parksense
+Student: Adarsh Anilkumar (AM25DXB003) · Live app: https://parksense-oqjk.onrender.com · Repository: https://github.com/adarsh836/parksense
 
 ---
 
 ## Summary
 
-ParkSense counts free and occupied bays in an open-air car park from one fixed camera. The operator outlines each bay once. After that, every image is cut into perspective-rectified bay crops, which a 108 KB int8 CNN classifies in about half a millisecond per bay on one CPU thread (35–120 ms per image). The app runs on Render's free tier (FastAPI + onnxruntime), shows each bay as free, occupied or not sure, plots occupancy over time, and publishes counts (never images) to a public page.
+ParkSense counts free and occupied bays in an open-air car park from one fixed camera. The operator outlines each bay once. After that, every image is cut into perspective-rectified bay crops, which a 376 KB CNN classifies in under a millisecond per bay (0.2–1.2 s per image on Render's free tier). The app runs on Render's free tier (FastAPI + onnxruntime), shows each bay as free, occupied or not sure, plots occupancy over time, and publishes counts (never images) to a public page.
 
 Trained on one Brazilian car park (UFPR04), the CNN reaches 99.5% bay accuracy on unseen days there, 99.8% on real rain it never saw, and 96.2% on two unseen car parks, against 90.2% for a classical edge-and-colour baseline. On a different camera set (CNRPark-EXT, Italy) it drops to 79.4%, *below* the baseline (87.9%). The main cause is viewpoint: the CNN misses cars seen from a low, oblique angle. The deployed model (all three PKLot car parks + photometric augmentation) reaches 81.0% there, and three operator-labelled frames per new camera raise it to 91.2% (Section 4.4).
 
@@ -49,7 +49,7 @@ Eight hand-crafted features per crop, each normalised by the crop's median brigh
 ### 3.2 Main model: ParkNet (Weeks 6–7)
 A small CNN in the spirit of mAlexNet (Amato et al., 2017), whose authors showed that a very small network generalises across car parks better than large ones. It has four convolution blocks (5×5 then 3×3 kernels, BatchNorm, ReLU, max-pooling; 24-48-64-96 channels), global average pooling, dropout 0.3 and a two-way linear layer: about 0.1 M parameters. It is trained from scratch (ImageNet weights were not reachable from the build environment), which the brief allows. Training uses AdamW, a one-cycle learning rate (peak 3e-3), label smoothing 0.05, batches of 128 and 14 epochs. The checkpoint with the best validation accuracy is kept. Geometric augmentation (flips, 90° rotations, ±15% scale, ±5 px shift) imitates imprecise operator outlines. Temperature scaling (Guo et al., 2017) is fitted on validation data so the "not sure" band means what it says. Every protocol arm is trained with three seeds and reported as mean ± standard deviation.
 
-The model is exported to ONNX (opset 17) and statically quantised to int8 (QDQ format, per-channel weights, calibration on 300 training crops), as in Lecture D. The deployed int8 model is 108 KB (fp32: 376 KB), agrees with fp32 on 99.86% of test bays (test accuracy 95.39% vs 95.40%), and runs in 0.48 ms per bay on one CPU thread (fp32: 0.90 ms).
+The model is exported to ONNX (opset 17) and statically quantised to int8 (QDQ format, per-channel weights, calibration on 300 training crops), as in Lecture D. The int8 model is 108 KB (fp32: 376 KB), agrees with fp32 on 99.86% of test bays on the build machine (test accuracy 95.39% vs 95.40%), and runs in 0.48 ms per bay on one CPU thread (fp32: 0.90 ms). On the deployment server it did not agree (Section 4.6), so the fp32 model is deployed.
 
 ### 3.3 Generative component: image-to-image weather translation (Week 8)
 **CycleGAN, trained on CPU.** An unpaired CycleGAN (Zhu et al., 2017) maps dry UFPR04 crops (domain A, 7,499 crops from training days) to rainy crops (domain B, 2,269 crops from the GAN-pool days, labels never read). Because the translation keeps scene geometry, every translated crop keeps its original label, giving labelled synthetic rain at no labelling cost.
@@ -153,7 +153,9 @@ Few-shot calibration is far more effective. Averaged over the nine CNRPark camer
 
 ### 4.6 Speed
 
-The int8 model takes 0.48 ms per bay on one thread. End to end, `/api/predict` on the six sample images takes 26–119 ms of server time (35–195 bays; median of three calls, `results/latency_localhost_8000.json`) on the 2-core build machine, and the server process uses 158 MB of memory, within Render's 512 MB. **To be completed after deployment:** server time on Render and the cold start after 15 idle minutes (`python training/bench_latency.py --url <render URL> --cold`).
+On Render's free tier, `/api/predict` takes 155–383 ms of server time for 35–55 bays and 1.2 s for the 195-bay PUCPR frame (median of three calls; 0.7–1.9 s round trip from a browser in Dubai; `results/latency_render.json`), inside the 5-second budget. The server process uses 158 MB of memory, within the 512 MB limit. After about 17 idle minutes the free service had spun down: the first request then took about **27 seconds** (Render shows a "waking up" page until the instance is ready), after which normal response times returned. Opening `/api/health` a minute before a demo avoids this.
+
+**A deployment bug found by measuring.** The first Render run gave different counts from the build machine for the same images (UFPR04 sunny: 18 occupied + 3 not sure instead of 22; PUCPR: 109 + 5 instead of 114). Render's CPU supports AVX2 but not VNNI, and onnxruntime's int8 kernels (unsigned activations × signed weights) can saturate on such CPUs. The deployed model was therefore switched to fp32 (376 KB, 0.9 ms per bay), whose answers on Render match the build machine exactly. `/api/health` now reports the CPU flags, so the check can be repeated after any change of host.
 
 ## 5 Discussion
 

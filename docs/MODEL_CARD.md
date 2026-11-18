@@ -1,6 +1,6 @@
 # Model card: ParkSense bay-occupancy classifier
 
-**Model:** ParkNet, a 4-block CNN (≈0.1 M parameters) trained from scratch; deployed as ONNX int8 (108 KB).
+**Model:** ParkNet, a 4-block CNN (≈0.1 M parameters) trained from scratch; deployed as ONNX fp32 (376 KB). An int8 version (108 KB) exists but is not deployed: it saturates on CPUs without VNNI, such as Render's.
 **Version:** `cnn_multi_photo_s0` (training arm `cnn_multi_photo`), exported 2026-11.
 **Input:** a 64×64 perspective-rectified crop of one parking bay, outlined once by the operator.
 **Output:** calibrated P(occupied) (temperature scaling, T ≈ 0.47). The app shows *free* (P ≤ 0.25), *occupied* (P ≥ 0.75) or *not sure*.
@@ -66,8 +66,8 @@
 | cyclegan_rain | 99.6% |
 
 ## Speed
-* int8 ONNX, one CPU thread: 0.48 ms per bay; int8 and fp32 agree on 99.9% of test bays.
-* `http://localhost:8000`: server time 26–118 ms per image (28–195 bays)
+* fp32 ONNX, one CPU thread: 0.90 ms per bay on the build machine (int8: 0.48 ms, agreeing on 99.9% of bays there).
+* `https://parksense-oqjk.onrender.com`: server time 155–1216 ms per image (35–195 bays), cold start 27 s
 
 ## Known failures
 * **New camera geometry:** accuracy drops on CNRPark-EXT. Low cameras see cars from behind or in front rather than from above; the model mostly misses those cars (false "free"). On unseen cameras most errors are *confident*, so the "not sure" band does not catch them: calibrate a new camera with 3 labelled frames.

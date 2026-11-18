@@ -4,7 +4,7 @@
 <body><header class="bar"><a class="logo" href="/"><span class="p">P</span>ParkSense</a>
 <nav><a href="/">Operator</a><a href="/public">Public view</a><a href="/help">Help</a><a href="/model-card" aria-current="page">Model card</a></nav></header>
 <main class="doc"><h1>Model card: ParkSense bay-occupancy classifier</h1>
-<p><b>Model:</b> ParkNet, a 4-block CNN (≈0.1 M parameters) trained from scratch; deployed as ONNX int8 (108 KB).</p>
+<p><b>Model:</b> ParkNet, a 4-block CNN (≈0.1 M parameters) trained from scratch; deployed as ONNX fp32 (376 KB). An int8 version (108 KB) exists but is not deployed: it saturates on CPUs without VNNI, such as Render&#x27;s.</p>
 <p><b>Version:</b> <code>cnn_multi_photo_s0</code> (training arm <code>cnn_multi_photo</code>), exported 2026-11.</p>
 <p><b>Input:</b> a 64×64 perspective-rectified crop of one parking bay, outlined once by the operator.</p>
 <p><b>Output:</b> calibrated P(occupied) (temperature scaling, T ≈ 0.47). The app shows <i>free</i> (P ≤ 0.25), <i>occupied</i> (P ≥ 0.75) or <i>not sure</i>.</p>
@@ -72,8 +72,8 @@
 </table>
 <h2>Speed</h2>
 <ul>
-<li>int8 ONNX, one CPU thread: 0.48 ms per bay; int8 and fp32 agree on 99.9% of test bays.</li>
-<li><code>http://localhost:8000</code>: server time 26–118 ms per image (28–195 bays)</li>
+<li>fp32 ONNX, one CPU thread: 0.90 ms per bay on the build machine (int8: 0.48 ms, agreeing on 99.9% of bays there).</li>
+<li><code>https://parksense-oqjk.onrender.com</code>: server time 155–1216 ms per image (35–195 bays), cold start 27 s</li>
 </ul>
 <h2>Known failures</h2>
 <ul>
