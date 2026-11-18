@@ -45,6 +45,8 @@ def main():
             "sim night (classical)": (np.stack([sim_night(x, rng) for x in Xc]), yc, ic),
             "sim fog (classical)": (np.stack([sim_fog(x, rng) for x in Xc]), yc, ic)}
     for s in a.sets:
+        if not os.path.exists(s):
+            print("skipping missing stress set", s); continue
         z = np.load(s); name = os.path.basename(s).replace(".npz", "").replace("stress_", "")
         sets[name] = (z["X"], z["y"], z["image_id"])
 

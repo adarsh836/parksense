@@ -1,0 +1,24 @@
+{
+ "source": "notebooks/diffusion_weather_colab.ipynb, run on a free Colab T4 on 2026-11-18 (results read from the notebook output)",
+ "generator": {"model": "timbrooks/instruct-pix2pix", "steps": 10, "image_guidance": 1.6, "text_guidance": 7.0, "resolution": "768x432 + Laplacian detail transfer (0.6)",
+               "prompts": {"night": "make it night time, dark sky, street lights, photographed by a security camera", "fog": "make it a thick foggy morning", "rain": "make it raining heavily, wet asphalt with reflections"},
+               "frames": {"stress (UFPR04 dry test, every 3rd)": 30, "augmentation (UFPR04 train, every 4th)": 52}, "translation_minutes": 14.1},
+ "stress_accuracy": {
+  "columns": ["clean UFPR04 dry test", "real rain", "classical night", "classical fog", "diffusion night", "diffusion fog", "diffusion rain"],
+  "baseline_logreg": [0.933, 0.947, 0.902, 0.511, 0.471, 0.561, 0.696],
+  "cnn_basic (A)": [0.995, 0.998, 0.494, 0.555, 0.498, 0.602, 0.529],
+  "cnn_photo (B)": [0.988, 0.980, 0.956, 0.973, 0.764, 0.657, 0.718],
+  "cnn_gan (C)": [0.995, 0.998, 0.525, 0.558, 0.498, 0.604, 0.527],
+  "cnn_diffusion (E)": [0.990, 0.993, 0.494, 0.654, 0.911, 0.795, 0.810],
+  "cnn_multi_basic (F)": [0.997, 0.999, 0.707, 0.532, 0.666, 0.580, 0.570],
+  "cnn_multi_photo (G, deployed)": [0.997, 0.994, 0.951, 0.992, 0.859, 0.659, 0.789],
+  "cnn_multi_diffusion (H)": [0.991, 0.984, 0.941, 0.965, 0.949, 0.823, 0.795]
+ },
+ "arm_E_cnn_diffusion_pooled_acc": {
+  "s0": {"UFPR04 seen weather": 0.9906, "UFPR04 real rain": 0.9929, "Unseen PKLot parks": 0.9619, "Unseen camera set (CNRPark)": 0.789, "All unseen rain": 0.934},
+  "s1": {"UFPR04 seen weather": 0.9872, "UFPR04 real rain": 0.9932, "Unseen PKLot parks": 0.942, "Unseen camera set (CNRPark)": 0.806, "All unseen rain": 0.920},
+  "s2": {"UFPR04 seen weather": 0.9918, "UFPR04 real rain": 0.9936, "Unseen PKLot parks": 0.9633, "Unseen camera set (CNRPark)": 0.772, "All unseen rain": 0.938},
+  "count_mae": {"s0": [0.34, 0.26, 3.44, 8.24, 4.46], "s1": [0.47, 0.24, 5.63, 7.22, 5.59], "s2": [0.30, 0.23, 3.27, 8.99, 4.14]}
+ },
+ "arm_H_cnn_multi_diffusion_s0_pooled_acc": {"UFPR04 seen weather": 0.9915, "UFPR04 real rain": 0.9839, "PKLot other parks (held-out days)": 0.978, "Unseen camera set (CNRPark)": 0.793, "All unseen rain": 0.958, "count_mae_cnrpark": 8.14, "count_mae_unseen_rain": 2.90}
+}

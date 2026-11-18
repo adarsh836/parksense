@@ -29,6 +29,14 @@ cams = ", ".join(f"{k.replace('CNR-cam', 'cam ')}: {pct(v)}" for k, v in E["per_
 hours = ", ".join(f"{k}: {pct(v['acc'])}" for k, v in E["per_hour_band"].items())
 band = [r for r in E["unsure_band"] if r["band"] == "0.25-0.75"]
 band_txt = "; ".join(f"{r['group']}: {pct(r['unsure_share'])} of bays flagged, {pct(r['acc_on_sure'])} accurate on the rest" for r in band)
+DF = R("diffusion_colab.json") if os.path.exists(os.path.join(ROOT, "results", "diffusion_colab.json")) else None
+diff_txt = ""
+if DF:
+    key = next((k for k in DF["stress_accuracy"] if k.startswith(arm + " ") or k == arm), None)
+    if key:
+        v = DF["stress_accuracy"][key]
+        diff_txt = (f"* **Diffusion-generated weather** (InstructPix2Pix, an independent generator): night {pct(v[4])}, fog {pct(v[5])}, rain {pct(v[6])}. "
+                    f"On the classical simulations it was trained with: night {pct(v[2])}, fog {pct(v[3])}, so robustness measured with the training generator is optimistic.")
 stress_txt = ""
 if arm in ST:
     stress_txt = "\n".join(f"| {k} | {pct(v['acc'])} |" for k, v in ST[arm].items())
@@ -82,6 +90,7 @@ md = f"""# Model card: ParkSense bay-occupancy classifier
 * "Not sure" band 0.25–0.75: {band_txt}.
 {(f"* **New-camera calibration** (CNRPark-EXT, mean of 9 cameras): {pct(CAL['0'])} with no labelled frames, {pct(CAL['1'])} after 1 operator-labelled frame, {pct(CAL['3'])} after 3." if CAL else "")}
 {(f"* **Frame-quality warnings** flag {pct(QG['flag_rate']['simulated_night'])} of simulated night, {pct(QG['flag_rate']['simulated_fog'])} of fog and {pct(QG['flag_rate']['simulated_blur'])} of blurred frames, with {pct(QG['flag_rate']['real_frames'])} false alarms on real frames." if QG else "")}
+{diff_txt}
 {("\n### Stress tests (accuracy on altered UFPR04 test frames)\n| Set | Accuracy |\n|---|---|\n" + stress_txt) if stress_txt else ""}
 
 ## Speed
@@ -89,7 +98,7 @@ md = f"""# Model card: ParkSense bay-occupancy classifier
 
 ## Known failures
 * **New camera geometry:** accuracy drops on CNRPark-EXT. Low cameras see cars from behind or in front rather than from above; the model mostly misses those cars (false "free"). On unseen cameras most errors are *confident*, so the "not sure" band does not catch them: calibrate a new camera with 3 labelled frames.
-* **Night and fog:** simulated night and fog push accuracy to near chance (see stress tests). The app warns on dark, low-contrast and blurred frames.
+* **Night and fog:** classical simulations are handled, but diffusion-generated fog drops accuracy to about two-thirds and night to 86%. The app warns on dark, low-contrast and blurred frames; do not rely on night-time counts.
 * **Occlusion:** bays fully under tree canopy cannot be read from the image (remove them from the layout); poles and vehicles straddling two bays cause errors both ways.
 * **Dark or shadowed vehicles** on dark, wet asphalt can be missed (false "free").
 * **Hard tree shadows** on sunny days: PUCPR sunny is the hardest PKLot subgroup.

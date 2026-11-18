@@ -55,6 +55,7 @@
 * "Not sure" band 0.25–0.75: UFPR04 test: 1.0% of bays flagged, 99.8% accurate on the rest; Unseen: 2.9% of bays flagged, 95.6% accurate on the rest.
 * **New-camera calibration** (CNRPark-EXT, mean of 9 cameras): 82.2% with no labelled frames, 86.5% after 1 operator-labelled frame, 91.2% after 3.
 * **Frame-quality warnings** flag 100.0% of simulated night, 91.7% of fog and 88.0% of blurred frames, with 2.0% false alarms on real frames.
+* **Diffusion-generated weather** (InstructPix2Pix, an independent generator): night 85.9%, fog 65.9%, rain 78.9%. On the classical simulations it was trained with: night 95.1%, fog 99.2%, so robustness measured with the training generator is optimistic.
 
 ### Stress tests (accuracy on altered UFPR04 test frames)
 | Set | Accuracy |
@@ -71,7 +72,7 @@
 
 ## Known failures
 * **New camera geometry:** accuracy drops on CNRPark-EXT. Low cameras see cars from behind or in front rather than from above; the model mostly misses those cars (false "free"). On unseen cameras most errors are *confident*, so the "not sure" band does not catch them: calibrate a new camera with 3 labelled frames.
-* **Night and fog:** simulated night and fog push accuracy to near chance (see stress tests). The app warns on dark, low-contrast and blurred frames.
+* **Night and fog:** classical simulations are handled, but diffusion-generated fog drops accuracy to about two-thirds and night to 86%. The app warns on dark, low-contrast and blurred frames; do not rely on night-time counts.
 * **Occlusion:** bays fully under tree canopy cannot be read from the image (remove them from the layout); poles and vehicles straddling two bays cause errors both ways.
 * **Dark or shadowed vehicles** on dark, wet asphalt can be missed (false "free").
 * **Hard tree shadows** on sunny days: PUCPR sunny is the hardest PKLot subgroup.

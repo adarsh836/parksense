@@ -7,7 +7,7 @@ ParkSense lets a car-park operator outline the bays in one camera image, then la
 * **Live app:** https://parksense-oqjk.onrender.com (Render free web service; the first request after 15 idle minutes takes about a minute)
 * **Main model:** small CNN (ParkNet, ~0.1 M parameters), ONNX fp32 **376 KB** (int8: 108 KB, not deployed because it saturates on Render's non-VNNI CPU); 0.2–1.2 s per image on Render
 * **Baseline:** edge-density + colour-variance features with logistic regression
-* **Generative AI:** CycleGAN dry→rain image-to-image translation trained on unlabelled rain footage (CPU), plus an InstructPix2Pix night/fog/rain notebook for free Colab
+* **Generative AI:** CycleGAN dry→rain translation trained on unlabelled rain footage (CPU), and InstructPix2Pix night/fog/rain translation on a free Colab T4 (`notebooks/diffusion_weather_colab.ipynb`, results in `results/diffusion_colab.json`). Neither improved accuracy on real data; as stress tests they showed the deployed model holds 86% in generated night but only 66% in generated fog
 * **Data:** PKLot (CC BY 4.0) and CNRPark-EXT (ODbL v1.0), with bay polygons from MetaPKLot
 
 Headline (bay accuracy, deployed model): 99.7% at the training car park, 98.4% on held-out days of the other PKLot car parks, 81.0% on an unseen camera set (CNRPark-EXT). The protocol model trained on one car park reaches 96.2% on unseen PKLot car parks vs 90.2% for the classical baseline.

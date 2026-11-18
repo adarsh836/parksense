@@ -53,3 +53,10 @@ CNN arms: mean ± std over seeds. Accuracy and macro-F1 per slot; count MAE = me
 | CNRPark-EXT | Sunny | 2196 | 0.863 / 0.860 / 4.9 | 0.778 / 0.778 / 8.4 | 0.697 / 0.697 / 12.0 | 0.777 / 0.777 / 8.6 | 0.778 / 0.778 / 8.5 | 0.776 / 0.776 / 8.6 |
 | CNRPark-EXT | Cloudy | 2196 | 0.909 / 0.909 / 3.5 | 0.780 / 0.774 / 8.7 | 0.709 / 0.692 / 11.7 | 0.778 / 0.771 / 8.8 | 0.797 / 0.791 / 8.0 | 0.767 / 0.759 / 9.3 |
 | CNRPark-EXT | Rainy | 2196 | 0.864 / 0.858 / 5.2 | 0.823 / 0.815 / 6.8 | 0.866 / 0.861 / 5.1 | 0.820 / 0.811 / 7.0 | 0.788 / 0.772 / 8.4 | 0.888 / 0.884 / 4.1 |
+
+## Diffusion arms (run on Colab T4, see results/diffusion_colab.json)
+
+| Model | seeds | UFPR04 seen weather | UFPR04 real rain | Unseen PKLot parks | Unseen camera set (CNRPark) | All unseen rain |
+|---|---|---|---|---|---|---|
+| E  CNN + diffusion night/fog/rain | 3 | 0.990 ± 0.002 | 0.993 ± 0.000 | 0.956 ± 0.010 | 0.789 ± 0.014 | 0.931 ± 0.008 |
+| H  G + diffusion night/fog/rain* | 1 | 0.992 | 0.984 | 0.978 | 0.793 | 0.958 |

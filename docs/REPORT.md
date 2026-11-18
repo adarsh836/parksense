@@ -11,25 +11,25 @@ ParkSense counts free and occupied bays in an open-air car park from one fixed c
 
 Trained on one Brazilian car park (UFPR04), the CNN reaches 99.5% bay accuracy on unseen days there, 99.8% on real rain it never saw, and 96.2% on two unseen car parks, against 90.2% for a classical edge-and-colour baseline. On a different camera set (CNRPark-EXT, Italy) it drops to 79.4%, *below* the baseline (87.9%). The main cause is viewpoint: the CNN misses cars seen from a low, oblique angle. The deployed model (all three PKLot car parks + photometric augmentation) reaches 81.0% there, and three operator-labelled frames per new camera raise it to 91.2% (Section 4.4).
 
-The generative component, a CycleGAN that turns dry frames into rain using unlabelled rain footage, preserved labels perfectly but learned only a subtle change. Retraining with it had no measurable effect. A discriminator test shows why: at this camera, rain barely changes how a bay looks. Stress tests with simulated night and fog, by contrast, push the CNN to chance level. That is the real robustness risk: the deployed model is trained with photometric augmentation (95–99% on the same simulations), and the app also detects such frames and asks for review.
+The generative component has two parts. A CycleGAN that turns dry frames into rain, learned from unlabelled rain footage, preserved labels but learned only a subtle change, because at this camera rain barely changes how a bay looks. An InstructPix2Pix diffusion model on a free Colab GPU produced strong night, fog and rain versions. Retraining with either generator did not improve accuracy on real test data. Their real value was as stress tests: the plain CNN falls to chance in night and fog, and the deployed model (trained with classical photometric augmentation) scores 95–99% on classical simulations but only 86% (night) and 66% (fog) on diffusion-generated frames. The app therefore warns on dark or foggy frames and asks for review.
 
 ---
 
 ## 1 Problem statement
 
-**User and decision.** The primary user is the operator of an open-air car park who wants live counts of free bays without installing a sensor in every bay. One camera can watch dozens of bays. The secondary users are drivers, who see a public page with the number of free bays per car park. The decision the app supports is where to send drivers (signage, a web page, an app) and, for the operator, when the car park is effectively full.
+**User and decision.** The primary user is the operator of an open-air car park who wants live counts of free bays without a sensor in every bay; one camera can watch dozens. The secondary users are drivers, who see a public page of free bays per car park. The decision the app supports is where to send drivers (signage, a web page, an app) and, for the operator, when the car park is effectively full.
 
 **What an error costs.** Errors are not symmetric:
 
 * A **free bay reported as occupied** (false positive) costs a little: a driver may skip a car park that still had space.
-* An **occupied bay reported as free** (false negative) costs more: drivers are sent to a full car park and circle, which is exactly the congestion the system should reduce, and it erodes trust in the public sign.
+* An **occupied bay reported as free** (false negative) costs more: drivers are sent to a full car park and circle, the congestion the system should reduce.
 * **Count error** matters more than individual bay errors for the public page. Two opposite errors cancel in the count. But near capacity, a count error of one or two bays decides between "3 free" and "FULL".
 
-So the app reports (i) per-bay states with a calibrated probability, (ii) a "not sure" band routed to the operator, (iii) a frame-level warning when the image is too dark, foggy or blurred, and (iv) the occupied-count error as a headline metric next to accuracy.
+So the app reports per-bay states with calibrated probabilities, routes a "not sure" band to the operator, warns on dark, foggy or blurred frames, and the evaluation reports count error next to accuracy.
 
 ## 2 Data
 
-**Sources and licences.** PKLot (de Almeida et al., 2015; CC BY 4.0) contains 12,416 frames from three car parks in Curitiba, Brazil: UFPR04 (a low camera, 28–37 bays), UFPR05 (5th floor, 40–46 bays) and PUCPR (10th floor, 100–195 bays). Every frame is labelled sunny, cloudy or rainy and every bay is labelled free or occupied. CNRPark-EXT (Amato et al., 2017; ODbL v1.0) has frames from nine cameras of a different car park in Pisa, Italy, under sunny, overcast and rainy weather. Both are redistributed with revised bay polygons in MetaPKLot (DSBD-Research, 2026). ParkSense downloads exactly the frames it uses from there (`training/fetch_data.sh`).
+**Sources and licences.** PKLot (de Almeida et al., 2015; CC BY 4.0) contains 12,416 frames from three car parks in Curitiba, Brazil: UFPR04 (a low camera, 28–37 bays), UFPR05 (5th floor, 40–46 bays) and PUCPR (10th floor, 100–195 bays). Frames carry a weather label and every bay a free/occupied label. CNRPark-EXT (Amato et al., 2017; ODbL v1.0) has frames from nine cameras of a different car park in Pisa, Italy, under sunny, overcast and rainy weather. Both are redistributed with revised bay polygons in MetaPKLot (DSBD-Research, 2026), from which `training/fetch_data.sh` downloads the frames used.
 
 **Sampling and splits.** To fit a 2-core CPU, the project samples 856 frames, giving 47,172 labelled bays (48.6% occupied). Splits follow three rules.
 
@@ -37,9 +37,9 @@ So the app reports (i) per-bay states with a calibrated probability, (ii) a "not
 2. **Rain as an unseen condition.** UFPR04 rainy days are split in half by day. One half (63 frames, the "GAN pool") is used *without labels* to train the image-to-image translator. The other half (74 frames) is the real-rain test set.
 3. **Unseen car parks and cameras.** UFPR05 (120 frames), PUCPR (90) and CNRPark-EXT (162, 18 per camera) are test-only, balanced over weather.
 
-One caveat: the UFPR04 rainy test days fall in the university's December recess, so only 20% of bays are occupied, against 49% on dry test days. Macro-F1 and count error are reported next to accuracy for that reason.
+Caveat: the UFPR04 rainy test days fall in the December recess, so only 20% of bays are occupied (49% on dry test days).
 
-**Preprocessing (Week 2).** Each bay polygon is reduced to four corners, ordered, and warped by a perspective transform into a 64×64 top-down crop. The corner order is rotated so the long side of the bay is always vertical, so a car appears "nose up" whatever the camera angle. The app uses the same function (`parksense_core.rectify`) on operator-drawn outlines, so training and production crops are produced identically.
+**Preprocessing (Week 2).** Each bay polygon is reduced to four corners, ordered, and warped by a perspective transform into a 64×64 top-down crop. The long side of the bay is always made vertical, so a car appears "nose up" whatever the camera angle. The app uses the same function (`parksense_core.rectify`) on operator-drawn outlines.
 
 ## 3 Methods
 
@@ -47,7 +47,7 @@ One caveat: the UFPR04 rainy test days fall in the university's December recess,
 Eight hand-crafted features per crop, each normalised by the crop's median brightness so they survive lighting changes: Canny edge density with automatic thresholds, edge density in the centre of the bay, Laplacian variance, grey-level standard deviation, mean and spread of saturation, hue spread, and mean gradient magnitude. A logistic regression is trained on UFPR04 training crops (it beat a single edge-density threshold, 90.2% vs 84.2% on unseen PKLot car parks).
 
 ### 3.2 Main model: ParkNet (Weeks 6–7)
-A small CNN in the spirit of mAlexNet (Amato et al., 2017), whose authors showed that a very small network generalises across car parks better than large ones. It has four convolution blocks (5×5 then 3×3 kernels, BatchNorm, ReLU, max-pooling; 24-48-64-96 channels), global average pooling, dropout 0.3 and a two-way linear layer: about 0.1 M parameters. It is trained from scratch (ImageNet weights were not reachable from the build environment), which the brief allows. Training uses AdamW, a one-cycle learning rate (peak 3e-3), label smoothing 0.05, batches of 128 and 14 epochs. The checkpoint with the best validation accuracy is kept. Geometric augmentation (flips, 90° rotations, ±15% scale, ±5 px shift) imitates imprecise operator outlines. Temperature scaling (Guo et al., 2017) is fitted on validation data so the "not sure" band means what it says. Every protocol arm is trained with three seeds and reported as mean ± standard deviation.
+A small CNN in the spirit of mAlexNet (Amato et al., 2017), who found very small networks generalise well across car parks. It has four convolution blocks (5×5 then 3×3 kernels, BatchNorm, ReLU, max-pooling; 24-48-64-96 channels), global average pooling, dropout 0.3 and a two-way linear layer: about 0.1 M parameters. It is trained from scratch (ImageNet weights were not reachable from the build environment), which the brief allows. Training uses AdamW, a one-cycle learning rate (peak 3e-3), label smoothing 0.05, batches of 128 and 14 epochs. Geometric augmentation (flips, 90° rotations, ±15% scale, ±5 px shift) imitates imprecise operator outlines. Temperature scaling (Guo et al., 2017) is fitted on validation data so the "not sure" band means what it says. Every protocol arm is trained with three seeds and reported as mean ± standard deviation.
 
 The model is exported to ONNX (opset 17) and statically quantised to int8 (QDQ format, per-channel weights, calibration on 300 training crops), as in Lecture D. The int8 model is 108 KB (fp32: 376 KB), agrees with fp32 on 99.86% of test bays on the build machine (test accuracy 95.39% vs 95.40%), and runs in 0.48 ms per bay on one CPU thread (fp32: 0.90 ms). On the deployment server it did not agree (Section 4.6), so the fp32 model is deployed.
 
@@ -59,20 +59,20 @@ Getting a usable translator took four iterations, each diagnosed rather than gue
 | Version | Change | What went wrong | Diagnosis |
 |---|---|---|---|
 | v1 | full frames, ½ resolution, transposed-conv upsampling | checkerboard artefacts | transposed convolutions; fixed with resize-convolution (Odena et al., 2016) |
-| v2 | full frames, ¼ resolution (to fit CPU) | cars dissolved into blobs | a car is only ~15×10 px at this scale; checked that output was not spatially shifted (phase correlation < 0.4 px) |
+| v2 | full frames, ¼ resolution (to fit CPU) | cars dissolved into blobs | a car is only ~15×10 px at this scale |
 | v3 | 64×64 bay crops | content blurred and lost at 500 iterations | too little compute for a generator learning from scratch |
 | v4 | **residual generator** (output = input + learned change, zero-initialised; SimGAN idea, Shrivastava et al., 2017) | discriminator loss stuck at 0.5, output ≈ input | **InstanceNorm in the discriminator** erased each crop's global brightness and saturation, which are the rain cues |
 | final | v4 + discriminator without normalisation, spectral norm, identity weight 2 | trains stably, preserves content | — |
 
-Final configuration: ResNet-type residual generator (24 channels, 5 blocks, ~0.9 M parameters), 70×70-style PatchGAN discriminator with spectral normalisation, least-squares GAN loss, cycle loss λ = 10, identity loss λ = 2, 50-image history buffer, batches of 4, 2,200 iterations (40 minutes on one CPU thread). The generator is fully convolutional, so it can also be applied to whole frames for visual inspection (`results/gallery/cyclegan_frame_*.jpg`).
+Final configuration: residual ResNet generator (24 channels, 5 blocks), spectral-norm PatchGAN, least-squares loss, cycle λ = 10, identity λ = 2, batches of 4, 2,200 iterations (40 minutes on one CPU thread).
 
-**Diffusion notebook (free Colab GPU).** `notebooks/diffusion_weather_colab.ipynb` applies InstructPix2Pix (Brooks et al., 2023) with the prompts "make it night time…", "make it a thick foggy morning" and "make it raining heavily…" on a free T4. It covers night and fog, for which PKLot has no real images (the 20:00–21:00 frames turned out to be as bright as daytime frames because of auto-exposure and long summer evenings). The outputs go through the same crop, stress-test and retraining scripts as the CycleGAN.
+**Diffusion (free Colab T4).** `notebooks/diffusion_weather_colab.ipynb` applies InstructPix2Pix (Brooks et al., 2023) at 768×432 (10 steps, image guidance 1.6, text guidance 7) with the prompts "make it night time…", "make it a thick foggy morning" and "make it raining heavily…", then adds back the frame's high-frequency detail. It covers night and fog, for which PKLot has no real images (its 20:00–21:00 frames are as bright as daytime ones). It translated 30 UFPR04 dry test frames (stress test) and 52 training frames (augmentation) per condition in 14 minutes.
 
 **Experiment design.** The generative component is tested twice:
 
-1. **Translator quality, measured.** (a) Fréchet distance (the FID formula) between dry, synthetic-rain and real-rain crops, computed in the feature space of an independently trained ParkNet and on colour statistics. (b) Label preservation: does a trained classifier still agree with the original labels on translated crops?
+1. **Translator quality.** Fréchet distance (the FID formula) between dry, synthetic-rain and real-rain crops in ParkNet-feature and colour space, and label preservation: does a trained classifier still agree with the original labels on translated crops?
 2. **Augmentation.** Arms on identical test sets: A (geometric augmentation only), B (+ classical photometric weather simulation: brightness, contrast, saturation, synthetic night, fog and rain streaks), C (+ CycleGAN rain: 30% of each batch replaced by translated crops). The question is whether C beats A and the cheap classical alternative B on real rain and unseen car parks.
-3. **Stress test.** Accuracy on altered copies of the same UFPR04 test frames: CycleGAN rain, classical night, classical fog.
+3. **Stress test.** Accuracy on altered copies of the same UFPR04 test frames: CycleGAN rain, classical night and fog, and diffusion night, fog and rain. Arm E retrains A with diffusion frames (3 seeds); arm H retrains the deployed recipe G with them.
 
 ### 3.4 Deployment model and camera calibration
 The protocol experiment trains on one car park to measure cross-site generalisation honestly. For the deployed app the training set is widened, following MetaPKLot's leave-one-dataset-out rule: UFPR04 plus 160 extra frames (16,300 bays) from UFPR05 and PUCPR, drawn only from days that contribute no test frame. CNRPark-EXT stays completely unseen. Arm F uses geometric augmentation only, arm G adds the photometric simulation; G is deployed (Section 4.1).
@@ -94,33 +94,37 @@ All numbers are on held-out test frames. CNN arms are mean ± standard deviation
 | A CNN | 99.5 ± 0.1% / 0.19 | 99.8 ± 0.1% / 0.07 | 96.2 ± 0.2% / 3.59 | 79.4 ± 0.2% / 7.95 |
 | B CNN + photometric simulation | 98.8 ± 0.1% / 0.45 | 98.0 ± 0.8% / 0.68 | 95.8 ± 0.2% / 3.62 | 75.7 ± 0.0% / 9.60 |
 | C CNN + CycleGAN rain | 99.5 ± 0.1% / 0.19 | 99.8 ± 0.1% / 0.07 | 96.4 ± 0.4% / 3.39 | 79.2 ± 0.8% / 8.10 |
+| E CNN + diffusion night/fog/rain | 99.0 ± 0.2% / 0.37 | 99.3 ± 0.0% / 0.24 | 95.6 ± 1.0% / 4.11 | 78.9 ± 1.4% / 8.15 |
 | F CNN, three PKLot car parks\* | 99.7% / 0.11 | 99.9% / 0.03 | 98.8%\* / 0.92 | 78.8% / 8.33 |
 | **G F + photometric (deployed)\*** | 99.7% / 0.10 | 99.4% / 0.20 | 98.4%\* / 1.26 | 81.0% / 7.35 |
+| H G + diffusion frames\* | 99.2% | 98.4% | 97.8%\* | 79.3% / 8.14 |
 
-*Cells: bay accuracy / mean absolute error in the number of occupied bays per image. \*For F and G, UFPR05 and PUCPR are held-out days of car parks seen in training, not unseen car parks.* Full tables with macro-F1 and every car park × weather subgroup: `results/experiment.md`; figure: `results/figures/arms_macro_f1.png`.
+*Cells: bay accuracy / mean absolute error in the number of occupied bays per image. \*For F, G and H, UFPR05 and PUCPR are held-out days of car parks seen in training, not unseen car parks.* Full tables with macro-F1 and every car park × weather subgroup: `results/experiment.md`; figure: `results/figures/arms_macro_f1.png`.
 
-The CNN beats the baseline everywhere in PKLot. On unseen PKLot car parks it halves the count error (3.6 vs 7.5 bays per image), and on the home car park it is twelve times smaller. On CNRPark-EXT the order flips: the baseline is 8.5 points more accurate and makes 43% smaller count errors. Among the deployment candidates, G beats F on the unseen camera set (81.0% vs 78.8%) and on rainy frames of other car parks (96.3% vs 94.2%), and loses 0.5 points on UFPR04 rain. Combined with its stress-test robustness (below), G is the model deployed. F and G are single-seed runs.
+The CNN beats the baseline everywhere in PKLot, halving the count error on unseen PKLot car parks (3.6 vs 7.5 bays per image). On CNRPark-EXT the order flips: the baseline is 8.5 points more accurate and makes 43% smaller count errors. Among the deployment candidates, G beats F on the unseen camera set (81.0% vs 78.8%) and on rainy frames of other car parks (96.3% vs 94.2%), and loses 0.5 points on UFPR04 rain. Combined with its stress-test robustness (below), G is the model deployed. F and G are single-seed runs.
 
 ### 4.2 Generative component
 
 **Translator quality.** Label preservation is near perfect. A classifier trained without synthetic data is 99.42% accurate on the original dry test crops and 99.39% on their translations, and its decisions agree on 99.97% of bays. The translation is also gentle: the mean absolute pixel change is 0.49 grey levels. For free bays (the bulk of the real-rain test set), synthetic rain moves slightly toward real rain: the Fréchet distance to real rain falls from 0.140 to 0.132 in CNN-feature space and from 0.68 to 0.60 on colour statistics. For occupied bays it does not (0.56 → 0.59). The real-rain property the translator fails to reproduce is reduced contrast: real rainy crops have 19% lower contrast than dry ones, synthetic ones keep the dry value (`results/gan_quality.json`).
 
-**Why so gentle?** A discriminator trained on its own for 250 steps to separate real rainy from dry UFPR04 crops reached only 59% (with spectral norm) to 68% (without) held-out accuracy. At this camera, rain is a small change at the level of a bay. Likewise, arm A, which never saw rain, scores 99.8% on real rain.
+**Why so gentle?** A discriminator trained alone to separate real rainy from dry UFPR04 crops reached only 59–68% held-out accuracy: at this camera, rain barely changes a bay, and arm A, which never saw rain, scores 99.8% on real rain.
 
-**Augmentation.** Arm C is indistinguishable from arm A on every test group (differences under one standard deviation). CycleGAN rain therefore **did not help**, because there was little rain-induced error left to fix. Classical photometric augmentation (B) helped where the shift is larger: on *rainy* frames of unseen car parks it is the best arm (94.7% vs 93.3%; count error 3.27 vs 4.59). But it cost 0.7 points at home and 3.7 points on CNRPark, where its brightness jitter made sunny and cloudy CNRPark frames worse (69.7% and 70.9% vs 77.8% and 78.0%).
+**Augmentation.** Arm C is indistinguishable from arm A on every test group (differences under one standard deviation). CycleGAN rain therefore **did not help**, because there was little rain-induced error left to fix. Classical photometric augmentation (B) helped where the shift is larger: on *rainy* frames of unseen car parks it is the best arm (94.7% vs 93.3%; count error 3.27 vs 4.59). But it cost 0.7 points at home and 3.7 points on CNRPark, where its brightness jitter made sunny and cloudy CNRPark frames worse (69.7% and 70.9% vs 77.8% and 78.0%). Diffusion frames (E, H) did not help on real data either: E is slightly below A everywhere, and H is below G on every group (`results/diffusion_colab.json`).
 
 **Stress test** (`results/stress.md`; accuracy on altered copies of the UFPR04 dry test frames):
 
-| Model | Clean | Real rain | CycleGAN rain | Simulated night | Simulated fog |
-|---|---|---|---|---|---|
-| Baseline | 93.2% | 94.7% | 93.1% | 90.3% | 51.1% |
-| A CNN | 99.5% | 99.8% | 99.5% | **49.4%** | **55.5%** |
-| B CNN + photometric | 98.8% | 98.0% | 98.7% | 95.6% | 97.3% |
-| C CNN + CycleGAN | 99.5% | 99.8% | 99.5% | 52.5% | 55.8% |
-| F (three car parks) | 99.7% | 99.9% | 99.7% | 70.7% | 53.2% |
-| **G deployed** | 99.7% | 99.4% | 99.6% | 95.1% | 99.2% |
+| Model | Clean | Real rain | CycleGAN rain | Classical night | Classical fog | Diffusion night | Diffusion fog | Diffusion rain |
+|---|---|---|---|---|---|---|---|---|
+| Baseline | 93.2 | 94.7 | 93.1 | 90.3 | 51.1 | 47.1 | 56.1 | 69.6 |
+| A CNN | 99.5 | 99.8 | 99.5 | **49.4** | **55.5** | 49.8 | 60.2 | 52.9 |
+| B + photometric | 98.8 | 98.0 | 98.7 | 95.6 | 97.3 | 76.4 | 65.7 | 71.8 |
+| C + CycleGAN | 99.5 | 99.8 | 99.5 | 52.5 | 55.8 | 49.8 | 60.4 | 52.7 |
+| E + diffusion | 99.0 | 99.3 | – | 49.4 | 65.4 | 91.1 | 79.5 | 81.0 |
+| F (three car parks) | 99.7 | 99.9 | 99.7 | 70.7 | 53.2 | 66.6 | 58.0 | 57.0 |
+| **G deployed** | 99.7 | 99.4 | 99.6 | 95.1 | 99.2 | **85.9** | **65.9** | 78.9 |
+| H = G + diffusion | 99.1 | 98.4 | – | 94.1 | 96.5 | 94.9 | 82.3 | 79.5 |
 
-CycleGAN rain and real rain cost the models the same (nothing), which supports the translator's realism but confirms its mildness. Simulated night and fog push every CNN without photometric training to chance. Arms B and G are measured with the same simulation family they were trained on, so their robustness is an optimistic estimate. An independent check needs differently generated night and fog, which is what the diffusion notebook provides.
+*Accuracy in %; diffusion columns use 30 of the 90 dry test frames.* CycleGAN rain and real rain cost the models the same (nothing), which supports the translator's realism but confirms its mildness. Night and fog push every CNN without matching augmentation to chance. The cross-generator cells are the informative ones: G, trained on classical simulations, scores 95–99% on them but 86% and 66% on diffusion night and fog; E, trained on diffusion frames, scores 91% on diffusion night but 49% on classical night. **Each augmentation mainly teaches the look of its own generator**, so robustness measured with the training generator is optimistic. Diffusion rain lowers every model (53–81%) while real rain does not, so InstructPix2Pix rain is less realistic than the CycleGAN's and may alter cars; its frames were checked by eye only for a sample (`results/gallery/diffusion_examples.jpg` in the notebook output).
 
 ### 4.3 Calibration and the "not sure" state
 
@@ -143,51 +147,46 @@ Few-shot calibration is far more effective. Averaged over the nine CNRPark camer
 **Failure gallery** (`results/gallery/failures.jpg`: the 16 most confident mistakes, each with frame context):
 
 * *Viewpoint.* Cars seen from behind or in front at a low angle fill the crop and look nothing like the top-down cars in training. This is the dominant CNRPark failure.
-* *Occlusion by trees.* Bays fully covered by canopy are labelled occupied in PKLot (the annotator knew) but are invisible in the image. No image model can be right here. These bays should be excluded from the layout.
-* *Bays at the image edge* that are mostly out of view.
-* *Label policy.* Motorbikes inside a CNRPark bay labelled free are predicted occupied. Arguably the model is right and the label policy differs.
-* *Vehicles straddling two bays* and a white van parked across a free bay.
-* *Dark cars in shadow on wet asphalt*, predicted free.
-
-**By time of day** (deployed model, all test frames): 98.1% before 09:00, 92.7% at 09–12, 94.8% at 12–15, 95.6% at 15–18, 98.3% after 18:00. The dip is not the clock itself: CNRPark frames are concentrated in those hours.
+* *Occlusion by trees.* Bays fully under canopy are labelled occupied in PKLot but are invisible in the image; they should be left out of the layout.
+* *Label policy.* Motorbikes in a CNRPark bay labelled free are predicted occupied.
+* *Edge-of-frame bays, vehicles straddling two bays, and dark cars in shadow on wet asphalt.*
 
 ### 4.6 Speed
 
-On Render's free tier, `/api/predict` takes 155–383 ms of server time for 35–55 bays and 1.2 s for the 195-bay PUCPR frame (median of three calls; 0.7–1.9 s round trip from a browser in Dubai; `results/latency_render.json`), inside the 5-second budget. The server process uses 158 MB of memory, within the 512 MB limit. After about 17 idle minutes the free service had spun down: the first request then took about **27 seconds** (Render shows a "waking up" page until the instance is ready), after which normal response times returned. Opening `/api/health` a minute before a demo avoids this.
+On Render's free tier, `/api/predict` takes 155–383 ms of server time for 35–55 bays and 1.2 s for the 195-bay PUCPR frame (median of three calls; 0.7–1.9 s round trip from a browser in Dubai; `results/latency_render.json`), inside the 5-second budget. The server uses 158 MB of memory (limit 512 MB). After 17 idle minutes the free service had spun down, and the first request took about **27 seconds**; opening `/api/health` a minute before a demo avoids this.
 
-**A deployment bug found by measuring.** The first Render run gave different counts from the build machine for the same images (UFPR04 sunny: 18 occupied + 3 not sure instead of 22; PUCPR: 109 + 5 instead of 114). Render's CPU supports AVX2 but not VNNI, and onnxruntime's int8 kernels (unsigned activations × signed weights) can saturate on such CPUs. The deployed model was therefore switched to fp32 (376 KB, 0.9 ms per bay), whose answers on Render match the build machine exactly. `/api/health` now reports the CPU flags, so the check can be repeated after any change of host.
+**A deployment bug found by measuring.** The first Render run gave different counts from the build machine for the same images (UFPR04 sunny: 18 occupied + 3 not sure instead of 22; PUCPR: 109 + 5 instead of 114). Render's CPU supports AVX2 but not VNNI, and onnxruntime's int8 kernels (unsigned activations × signed weights) can saturate on such CPUs. The deployed model was therefore switched to fp32 (376 KB, 0.9 ms per bay), whose answers on Render match the build machine exactly; `/api/health` now reports the CPU flags.
 
 ## 5 Discussion
 
 **What worked.** Perspective rectification plus a tiny CNN is accurate and fast enough that the free tier is not a constraint: a 195-bay frame takes about 0.1 s, far inside the 5-second budget. Day-level splits and fully unseen car parks gave a realistic picture of generalisation, unlike the near-perfect scores of PKLot studies that mix frames from the same days.
 
-**What did not.** The CycleGAN, the brief's suggested generative tool, did not improve the classifier. The careful measurement shows this is a property of the data, not a bug: rain changes bays very little at this camera, the discriminator can barely tell the domains apart, and the classifier already handles real rain. A generative component earns its place where the domain gap is large. Here that means night, fog and, above all, new camera viewpoints. Those are also where the models fail.
+**What did not.** Neither generator improved the classifier on real data. For the CycleGAN this is a property of the data: rain changes bays very little at this camera, and the classifier already handles real rain. The diffusion model makes large changes, but its frames teach mostly its own style. The generators were most useful as independent stress tests, which exposed that the deployed model's fog robustness was overstated by the classical simulation.
 
 **What the experiment changes in the product.** (1) Frame-level warnings were recalibrated on data: brightness < 50, relative contrast < 0.2, Laplacian variance < 300. They flag 100% of simulated night, 92% of fog and 88% of blurred frames, with 2% false alarms on real frames (`results/quality_gate.json`). (2) The app recommends checking the first frames from any new camera; three corrected frames lift accuracy on an unseen camera from 82% to 91%. (3) The deployed model (G) is trained on all three PKLot car parks with photometric augmentation, which is the best single trade-off between accuracy on real data and robustness to dark and foggy frames.
 
 ## 6 Responsible AI
 
-**Privacy by design.** The service never reads licence plates or identifies vehicles or people. Uploaded images are decoded in memory, classified and discarded. They are not written to disk, logged or returned, and the public page receives only four integers per car park. The bay crops are 64×64 pixels of a bay region; at the PKLot and CNRPark resolutions, plates are not legible in them. Operators are told (help page) to point cameras at bays rather than entrances or footpaths, and to put up signage that the car park is monitored for occupancy counts.
+**Privacy by design.** The service never reads licence plates or identifies vehicles or people. Uploaded images are decoded in memory, classified and discarded. They are not written to disk, logged or returned, and the public page receives only four integers per car park. Operators are told (help page) to point cameras at bays, not entrances or footpaths, and to put up signage about occupancy monitoring.
 
-**Bias and coverage.** The data come from two countries, open-air car parks, daylight and mostly European and Brazilian passenger cars. Subgroup results show where the model is weaker: low camera angles (CNRPark cam 5, 7, 9), tree occlusion, and simulated night and fog. Vehicle types outside the data (vans, trucks, motorbikes) are handled inconsistently, partly because label policies differ. None of this affects individuals directly, but it does affect *which car parks* get accurate counts. A car park with a cheap, low camera is served worse, so calibration should be offered to every operator, not only those who notice the errors.
+**Bias and coverage.** The data come from two countries, open-air car parks, daylight and mostly European and Brazilian passenger cars. Subgroup results show where the model is weaker: low camera angles (CNRPark cam 5, 7, 9), tree occlusion, and simulated night and fog. Vans, trucks and motorbikes are handled inconsistently. None of this affects individuals directly, but it affects *which car parks* get accurate counts. A car park with a cheap, low camera is served worse, so calibration should be offered to every operator, not only those who notice the errors.
 
 **Human in the loop.** (1) Calibrated "not sure" bays are listed for review and can be overridden before counts are published. Overrides are marked with an asterisk. (2) Section 4.3 showed the band misses most cross-camera errors, so the design does not rely on it alone. Frame-level warnings catch dark, foggy and blurred frames, and new cameras require a calibration check. (3) The operator, not the model, publishes. The model card lists out-of-scope uses (enforcement, identification, barrier control without review).
 
-**Model card.** `docs/MODEL_CARD.md` (also served at `/model-card`) records intended use, out-of-scope use, data, metrics by subgroup, known failures and speed. It is generated from the result files, so its numbers cannot drift from the experiments.
+**Model card.** `docs/MODEL_CARD.md` (also at `/model-card`) is generated from the result files, so its numbers cannot drift from the experiments.
 
 ## 7 Limitations and future work
 
-* **Sample size.** 856 frames rather than the full 12,416 (CPU budget). With 18–120 frames per test group, differences under about one point between arms should not be over-read; standard deviations over seeds are reported for that reason. Arms F and G use a single seed.
-* **No real night or fog data.** The night and fog stress tests are simulations. The InstructPix2Pix notebook is the next step and needs a free Colab GPU, which was not available in the build environment.
+* **Sample size.** 856 test-and-train frames, not all 12,416. Differences under about one point between arms should not be over-read; F, G and H use a single seed.
+* **No real night or fog data.** Night and fog are tested only with generated frames (classical and diffusion), which disagree with each other; real labelled night footage is needed before night-time use.
 * **No ImageNet pre-training.** A pre-trained MobileNetV3-Small on Colab is the natural comparison for the CNRPark gap.
 * **Calibration is offline.** The operator corrects bays in the app, but fine-tuning runs as a script (`camera_calibration.py`); exporting corrections and fine-tuning from the app is the next step.
 * **Static layouts.** If the camera moves, the layout must be redrawn; automatic bay detection (a stretch goal) would remove that.
-* **Public page persistence.** Counts are held in memory and lost when the free service sleeps. That is acceptable for a demo; a real deployment would need a small database.
-* **CycleGAN capacity.** Forty minutes of CPU training is short by GAN standards. A GPU run, a CycleGAN aimed at *camera* style using unlabelled footage of the new camera (a CyCADA-style adaptation), or diffusion-based viewpoint changes would target the gap that actually matters.
+* **Generators aimed at the wrong gap.** Weather was the brief's target, but the costly gap is camera viewpoint. A CycleGAN trained on unlabelled footage of the new camera (CyCADA-style) would target it.
 
 ## 8 Conclusion
 
-ParkSense meets the brief's functional and deployment requirements with a model small enough to run on any free tier. Its headline accuracy at the training car park (99.5%) is not the interesting number. The interesting ones are 79–81% on a camera set it has never seen, 91% after three labelled frames, and chance-level accuracy in simulated fog, now caught by a frame-level warning. The generative experiment was negative, and saying so clearly, with the discriminator test that explains it, is more useful to an operator than an augmentation chosen because it looked impressive.
+ParkSense meets the brief's functional and deployment requirements with a model small enough to run on any free tier. Its headline accuracy at the training car park (99.5%) is not the interesting number. The interesting ones are 79–81% on a camera set it has never seen, 91% after three labelled frames, and 66% in diffusion-generated fog, now caught by a frame-level warning. Both generative augmentations were negative on real data, but as stress tests they revealed what a single simulation hid. Saying so clearly is more useful to an operator than an augmentation chosen because it looked impressive.
 
 ## References
 
